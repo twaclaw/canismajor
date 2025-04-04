@@ -2,26 +2,62 @@ import asyncio
 import logging
 from enum import StrEnum
 
+import aiofiles
 import httpx
 
 logger = logging.getLogger(__name__)
 
+class Script:
+    def __init__(self, template: str, script_path: str, delay1: int, delay2: int):
+        self.template = template
+        self.script_path = script_path
+        self.delay1 = delay1
+        self.delay2 = delay2
+        self.script = None
+        self.id = self.script_path.rstrip("/").split("/")[-1]
 
-class Feature(StrEnum):
-    CONST_LINES = "constellation_lines"
-    CONST_ART = "constellation_art"
-    CONST_LABELS = "constellation_labels"
-    CONST_BOUNDARIES = "constellation_boundaries"
-    ATMOSPHERE = "atmosphere"
-    NIGHT_MODE = "night_mode"
-    PLANETS_LABELS = "planets_labels"
-    GROUND = "ground"
+    async def ainit(self):
+        async with aiofiles.open(self.template, "r") as f:
+            self.script = await f.read()
+        self.script = self.script.replace("DELAY1", str(self.delay1))
+        self.script = self.script.replace("DELAY2", str(self.delay2))
+
+    async def replace_and_save(self, name: list[str] | str):
+        """
+        Modifies the template and stores it in the script path.
+        """
+        if not self.script:
+            await self.ainit()
+
+        objects = name if isinstance(name, list) else [name]
+        modified_script = self.script.replace("OBJECTS_LIST", str(objects))
+
+        async with aiofiles.open(self.script_path, "w") as f:
+            await f.write(modified_script)
 
 
 class Stellarium:
-    def __init__(self, url: str = "http://localhost", port: int = 8090):
+    def __init__(
+        self,
+        const_script: str,
+        const_template: str,
+        const_delay1: int,
+        const_delay2: int,
+        planets_script: str,
+        planets_template: str,
+        planets_delay1: int,
+        planets_delay2: int,
+        url: str = "http://localhost",
+        port: int = 8090,
+    ):
         self.client = httpx.AsyncClient()
         self.url = f"{url}:{port}/api"
+        self.const_script = Script(
+            const_template, const_script, const_delay1, const_delay2
+        )
+        self.planets_script = Script(
+            planets_template, planets_script, planets_delay1, planets_delay2
+        )
 
     async def close(self):
         await self.client.aclose()
@@ -43,7 +79,7 @@ class Stellarium:
         except httpx.RequestError:
             logger.warning(f"Failed to post data to {self.url}/{endpoint}")
             return None
-        except Exception: #JSONDecoderError:
+        except Exception:  # JSONDecoderError:
             return response.text
 
     async def test(self):
@@ -52,86 +88,16 @@ class Stellarium:
         except Exception:
             return False
 
-    async def focus(self, name: str, mode: str = "center", unfocus: bool = True):
-        name = name.title()
-        names = await self.get(f"objects/find?str={name}")
-        if names:
-            await self.post("main/focus", {"target": name, "mode": mode})
-            if unfocus:
-                await self.unfocus()
-
-    async def unfocus(self):
-        return await self.post("main/focus")
-
-
-    async def toggle_visibility(self, feature: Feature, state: bool):
-        response = await self.post(
-            "stelaction/do", {"id": f"actionShow_{feature.title()}"}
-        )
-        if response is state:
-            return response
-
-        return await self.post("stelaction/do", {"id": f"actionShow_{feature.title()}"})
-
-    async def get_fov(self) -> float:
-        response = await self.get("main/status")
-        return response["view"]["fov"]
-
     async def get_status(self):
         return await self.get("main/status")
 
-    async def get_focused_object_type(self) -> str:
-        status = await self.get("objects/info")
-        return "constellation" if "constellation" in status else "object"
+    async def run_script(self, script_id: str):
+        await self.post("scripts/run", {"id": script_id})
 
-    async def set_fov(self, fov: float):
-        return await self.post("main/fov", {"fov": fov})
-
-    async def zoom(self, factor: float, t: float = 3):
-        fov = await self.get_fov()
-        return await self.post("scripts/direct", {"code": f"StelMovementMgr.zoomTo({fov*factor}, {t})"})
-
-
-    async def focus_animation(self, name: str, delay: int = 5, initial_fov: float = 60):
-        await self.default_visibility()
-        await self.set_fov(initial_fov)
-        await self.focus(name, "center", False)
-        object_type = await self.get_focused_object_type()
-        await self.unfocus()
-
-        if object_type == "constellation":
-            await asyncio.sleep(delay)
-            await self.toggle_visibility(Feature.CONST_LINES, True)
-            await asyncio.sleep(delay)
-            await self.toggle_visibility(Feature.CONST_ART, True)
-            await asyncio.sleep(delay)
-            await self.set_fov(initial_fov)
-        else:
-            await asyncio.sleep(delay)
-            await self.toggle_visibility(Feature.PLANETS_LABELS, False)
-            await self.focus(name, "zoom")
-            await asyncio.sleep(delay)
-            zoom_factor = 0.1
-            await self.zoom(zoom_factor, 3)
-            await asyncio.sleep(delay)
-            await self.zoom(initial_fov/zoom_factor, 3)
-
-    async def ainit(self) -> bool:
-        ok = await self.test()
-        if not ok:
-            logger.error(f"Failed to connect to {self.url}")
-            return False
-
-        await self.default_visibility()
-        return True
-
-    async def default_visibility(self):
-        await self.toggle_visibility(Feature.CONST_LINES, False)
-        await self.toggle_visibility(Feature.CONST_ART, False)
-        await self.toggle_visibility(Feature.CONST_LABELS, False)
-        await self.toggle_visibility(Feature.CONST_BOUNDARIES, False)
-        await self.toggle_visibility(Feature.ATMOSPHERE, False)
-        await self.toggle_visibility(Feature.NIGHT_MODE, False)
-        await self.toggle_visibility(Feature.PLANETS_LABELS, True)
-        await self.toggle_visibility(Feature.GROUND, False)
-        return True
+    async def focus(self, name: str, typ: str = "constellation"):
+        if typ == "constellation":
+            await self.const_script.replace_and_save(name)
+            await self.run_script(self.const_script.id)
+        elif typ == "planet":
+            await self.planets_script.replace_and_save(name)
+            await self.run_script(self.planets_script.id)
