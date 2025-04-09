@@ -1,3 +1,28 @@
+# Canis Major
+
+> A sky projection based on Stellarium for very curious and inquisitive children
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/7/75/Planisph%C3%A6ri_c%C5%93leste.jpg"></img>
+
+In Carl Sagan's Contact, SETI detects an intelligent signal coming from the star Vega in the constellation Lyra. In The Invincible by Stanislaw Lem, the crew of the eponymous spaceship lands on the planet Regis III, in the constellation Auriga, and finds the ruins of an ancient Lyran civilization (apparently Lyrans are super-advanced, or at least very popular). And in The Three Body Problem by Cixin Liu, the invaders come from the constellation Centaurus.
+
+Constellations are not only the beautiful tapestry of the sky and the source of awe and inspiration for many stories and myths, they are essentially celestial landmarks. Whether it is a super intelligent civilization in a science fiction story or a scientific observation, the constellations are our reference points in the sky. For example, the planets move very close to the ecliptic, so the constellations not only give you your horoscope, but can help you find our traveling companions.
+
+Constellations and their mythologies are also great material for bedtime stories. I was inspired to create this project while reading _Constellations_ by Govert Schilling.
+In a way, I see this project as an extension of the book. I extended the book with an animated, real-time projection of the night sky. Of course, all the heavy lifting is done by [Stellarium](https://stellarium.org/), one of my all-time favorite open source software.
+
+# Project description
+
+This project is basically a remote control for Stellarium. It uses the API provided by the remote control plugin to trigger scripts written in the Stellarium scripting engine. The objects and animations to be displayed are controlled by QR codes (pasted in the corresponding constellations on the book), or by voice (coming soon), or by an RFID reader (coming soon).
+
+![](./img/block_diagram.svg)
+
+Everything runs on a Raspberry Pi 5 connected to a projector.
+
+TODO: diagram raspberry pi, qrcode reader, qrcode, projector.
+
+# Instructions
+
 Installing Stellarium
 
 ```bash
@@ -81,10 +106,14 @@ To verify if the port is connected use `kmsprint`.
 
 To check the current configuration use `kmsprint -m` or `xrandr`.
 
-
 # UI
 
 ```bash
 sudo apt-get install raspberrypi-ui-mods
 
 ```
+
+# References
+
+- [Stellarium](https://stellarium.org/)
+- Title image: A celestial map by the Dutch cartographer Frederik de Wit, 1670, [Wikimedia](https://en.wikipedia.org/wiki/Star_chart#/media/File:Planisph%C3%A6ri_c%C5%93leste.jpg)

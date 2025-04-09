@@ -23,7 +23,7 @@ scripts:
     template: templates/constellations.ssc
     script: /Applications/Stellarium.app/Contents/Resources/scripts/focus_const.ssc
     delay1: 3
-    delay2: 10
+    delay2: 7
     final_fov: 150
 
   object:
