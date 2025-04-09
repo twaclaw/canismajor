@@ -1,127 +1,152 @@
-stellarium_objects:
-  - Andromeda
-  - Antlia
-  - Apus
-  - Aquarius
-  - Aquila
-  - Ara
-  - Aries
-  - Auriga
-  - Boötes
-  - Caelum
-  - Camelopardalis
-  - Cancer
-  - Canes Venatici
-  - Canis Major
-  - Canis Minor
-  - Capricornus
-  - Carina
-  - Cassiopeia
-  - Centaurus
-  - Cepheus
-  - Cetus
-  - Chamaeleon
-  - Circinus
-  - Columba
-  - Coma Berenices
-  - Corona Australis
-  - Corona Borealis
-  - Corvus
-  - Crater
-  - Crux
-  - Cygnus
-  - Delphinus
-  - Dorado
-  - Draco
-  - Equuleus
-  - Eridanus
-  - Fornax
-  - Gemini
-  - Grus
-  - Hercules
-  - Horologium
-  - Hydra
-  - Hydrus
-  - Indus
-  - Lacerta
-  - Leo
-  - Leo Minor
-  - Lepus
-  - Libra
-  - Lupus
-  - Lynx
-  - Lyra
-  - Mensa
-  - Microscopium
-  - Monoceros
-  - Musca
-  - Norma
-  - Octans
-  - Ophiuchus
-  - Orion
-  - Pavo
-  - Pegasus
-  - Perseus
-  - Phoenix
-  - Pictor
-  - Pisces
-  - Piscis Austrinus
-  - Puppis
-  - Pyxis
-  - Reticulum
-  - Sagitta
-  - Sagittarius
-  - Scorpius
-  - Sculptor
-  - Scutum
-  - Serpens
-  - Sextans
-  - Taurus
-  - Telescopium
-  - Triangulum
-  - Triangulum Australe
-  - Tucana
-  - Ursa Major
-  - Ursa Minor
-  - Vela
-  - Virgo
-  - Volans
-  - Vulpecula
-  - Mercury
-  - Venus
-  - Earth
-  - Moon
-  - Mars
-  - Phobos
-  - Deimos
-  - Jupiter
-  - Io
-  - Europa
-  - Ganymede
-  - Callisto
-  - Saturn
-  - Mimas
-  - Enceladus
-  - Tethys
-  - Dione
-  - Rhea
-  - Titan
-  - Hyperion
-  - Iapetus
-  - Phoebe
-  - Uranus
-  - Miranda
-  - Ariel
-  - Umbriel
-  - Titania
-  - Oberon
-  - Neptune
-  - Triton
-  - Proteus
-  - Nereid
-  - Pluto
-  - Charon
-  - Styx
-  - Nix
-  - Kerberos
-  - Hydra
+stellarium:
+  port: 8090
+  initial_fov: 60
+  objects_language: english
+
+  # Behavior when a script is already running
+  # behavior_previous_script:
+  # - stop: stop the previous script
+  # - wait: wait for the previous script to finish
+  # - ignore: ignore the new script
+  behavior_previous_script: wait
+  timeout_previous_script: 120
+
+# Controls
+# - qrcode: QR code scanner
+# - asr: Automatic Speech Recognition
+# - rfid: RFID reader (over websocket)
+controls:
+  - qrcode
+
+scripts:
+  constellation:
+    template: templates/constellations.ssc
+    script: /Applications/Stellarium.app/Contents/Resources/scripts/focus_const.ssc
+    delay1: 3
+    delay2: 10
+    final_fov: 150
+
+  object:
+    template: templates/objects.ssc
+    script: /Applications/Stellarium.app/Contents/Resources/scripts/focus_object.ssc
+    delay1: 5
+    delay2: 10
+    final_fov: 300
+
+  zodiac2:
+    template: templates/zodiac2.ssc
+    script: /Applications/Stellarium.app/Contents/Resources/scripts/zodiac2.ssc
+    delay1: 1
+    delay2: 5
+    final_fov: 300
+
+objects:
+  constellations:
+    Andromeda: Chained Maiden
+    Antlia: Air Pump
+    Apus: Bird of Paradise
+    Aquarius: Water Bearer
+    Aquila: Eagle
+    Ara: Altar
+    Aries: Ram
+    Auriga: Charioteer
+    Bootes: Herdsman
+    Caelum: Chisel
+    Camelopardalis: Giraffe
+    Cancer: Crab
+    Canes Venatici: Hunting Dogs
+    Canis Major: Great Dog
+    Canis Minor: Lesser Dog
+    Capricornus: Sea Goat
+    Carina: Keel
+    Cassiopeia: Seated Queen
+    Centaurus: Centaur
+    Cepheus: King
+    Cetus: Whale
+    Chamaeleon: Chameleon
+    Circinus: Compass
+    Columba: Dove
+    Coma Berenices: Berenice's Hair
+    Corona Australis: Southern Crown
+    Corona Borealis: Northern Crown
+    Corvus: Crow
+    Crater: Cup
+    Crux: Southern Cross
+    Cygnus: Swan
+    Delphinus: Dolphin
+    Dorado: Swordfish
+    Draco: Dragon
+    Equuleus: Little Horse
+    Eridanus: River
+    Fornax: Furnace
+    Gemini: Twins
+    Grus: Crane
+    Hercules: Strongman
+    Horologium: Clock
+    Hydra: Sea Serpent
+    Hydrus: Lesser Water Snake
+    Indus: Indian
+    Lacerta: Lizard
+    Leo: Lion
+    Leo Minor: Lesser Lion
+    Lepus: Hare
+    Libra: Scales
+    Lupus: Wolf
+    Lynx: Lynx
+    Lyra: Lyre
+    Mensa: Table Mountain
+    Microscopium: Microscope
+    Monoceros: Unicorn
+    Musca: Fly
+    Norma: Carpenter's Square
+    Octans: Octant
+    Ophiuchus: Serpent Bearer
+    Orion: Hunter
+    Pavo: Peacock
+    Pegasus: Winged Horse
+    Perseus: Hero
+    Phoenix: Phoenix
+    Pictor: Painter's Easel
+    Pisces: Fishes
+    Piscis Austrinus: Southern Fish
+    Puppis: Stern
+    Pyxis: Compass Box
+    Reticulum: Net
+    Sagitta: Arrow
+    Sagittarius: Archer
+    Scorpius: Scorpion
+    Sculptor: Sculptor
+    Scutum: Shield
+    Serpens: Serpent
+    Sextans: Sextant
+    Taurus: Bull
+    Telescopium: Telescope
+    Triangulum: Triangle
+    Triangulum Australe: Southern Triangle
+    Tucana: Toucan
+    Ursa Major: Big Dipper
+    Ursa Minor: Little Dipper
+    Vela: Sails
+    Virgo: Virgin
+    Volans: Flying Fish
+    Vulpecula: Little Fox
+
+  objects:
+    - Mercury
+    - Venus
+    - Earth
+    - Moon
+    - Mars
+    - Jupiter
+    - Io
+    - Europa
+    - Ganymede
+    - Callisto
+    - Saturn
+    - Titan
+    - Enceladus
+    - Uranus
+    - Neptune
+    - Triton
+    - Pluto
+    - Charon

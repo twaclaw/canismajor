@@ -1,26 +1,29 @@
 import asyncio
 import logging
-from enum import StrEnum
 
 import aiofiles
 import httpx
 
 logger = logging.getLogger(__name__)
 
+
 class Script:
-    def __init__(self, template: str, script_path: str, delay1: int, delay2: int):
+    def __init__(self, template: str, script: str, delay1: float, delay2: float, final_fov: int):
         self.template = template
-        self.script_path = script_path
+        self.script_path = script
         self.delay1 = delay1
         self.delay2 = delay2
         self.script = None
+        self.final_fov = final_fov
         self.id = self.script_path.rstrip("/").split("/")[-1]
 
     async def ainit(self):
-        async with aiofiles.open(self.template, "r") as f:
-            self.script = await f.read()
-        self.script = self.script.replace("DELAY1", str(self.delay1))
-        self.script = self.script.replace("DELAY2", str(self.delay2))
+        if self.template:
+            async with aiofiles.open(self.template, "r") as f:
+                self.script = await f.read()
+            self.script = self.script.replace("DELAY1", str(self.delay1))
+            self.script = self.script.replace("DELAY2", str(self.delay2))
+            self.script = self.script.replace("FINAL_FOV", str(self.final_fov))
 
     async def replace_and_save(self, name: list[str] | str):
         """
@@ -29,35 +32,24 @@ class Script:
         if not self.script:
             await self.ainit()
 
-        objects = name if isinstance(name, list) else [name]
-        modified_script = self.script.replace("OBJECTS_LIST", str(objects))
+        if self.template:
+            objects = name if isinstance(name, list) else [name]
+            modified_script = self.script.replace("OBJECTS_LIST", str(objects))
 
-        async with aiofiles.open(self.script_path, "w") as f:
-            await f.write(modified_script)
+            async with aiofiles.open(self.script_path, "w") as f:
+                await f.write(modified_script)
 
 
 class Stellarium:
     def __init__(
         self,
-        const_script: str,
-        const_template: str,
-        const_delay1: int,
-        const_delay2: int,
-        planets_script: str,
-        planets_template: str,
-        planets_delay1: int,
-        planets_delay2: int,
+        scripts: dict[str, dict[str, str]],
         url: str = "http://localhost",
         port: int = 8090,
     ):
         self.client = httpx.AsyncClient()
         self.url = f"{url}:{port}/api"
-        self.const_script = Script(
-            const_template, const_script, const_delay1, const_delay2
-        )
-        self.planets_script = Script(
-            planets_template, planets_script, planets_delay1, planets_delay2
-        )
+        self.scripts = {key: Script(**values) for key, values in scripts.items()}
 
     async def close(self):
         await self.client.aclose()
@@ -94,10 +86,21 @@ class Stellarium:
     async def run_script(self, script_id: str):
         await self.post("scripts/run", {"id": script_id})
 
-    async def focus(self, name: str, typ: str = "constellation"):
-        if typ == "constellation":
-            await self.const_script.replace_and_save(name)
-            await self.run_script(self.const_script.id)
-        elif typ == "planet":
-            await self.planets_script.replace_and_save(name)
-            await self.run_script(self.planets_script.id)
+    async def is_script_running(self):
+        status = await self.get("scripts/status")
+        return status["scriptIsRunning"]
+
+    async def wait_script_completion(self):
+        while await self.is_script_running():
+            await asyncio.sleep(1)
+
+    async def stop_script(self):
+        await self.post("scripts/stop")
+
+    async def focus(self, name: str | None = None, typ: str = "constellation"):
+        script = self.scripts.get(typ, None)
+        if not script:
+            logger.warning(f"Script {typ} not found")
+            return
+        await script.replace_and_save(name)
+        await self.run_script(script.id)

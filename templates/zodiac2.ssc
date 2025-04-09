@@ -1,0 +1,52 @@
+// Name: Zodiac
+// Author: Matthew Gates
+// License: Public Domain
+// Version: 1.2
+// Description: This script displays the constellations of the Zodiac.
+//              That means the constellations which lie along the line which
+//              the Sun traces across the celestial sphere over the course
+//              of a year.
+//
+
+var constellations = new Array("Twins", "Crab", "Lion", "Maiden", "Scales", "Scorpion", "Serpent Bearer", "Archer", "Sea Goat", "Water Bearer", "Fishes", "Ram", "Bull");
+
+var delay1 = DELAY1;
+var delay2 = DELAY2;
+
+core.setSkyCulture("modern");
+core.clear("deepspace");
+core.wait(1);
+
+ConstellationMgr.setConstellationDisplayStyle(1);
+
+ConstellationMgr.setFlagLabels(false);
+ConstellationMgr.setFlagArt(false);
+ConstellationMgr.deselectConstellations();
+
+//core.setDate("2006:03:14T21:21:32");
+core.moveToRaDec("17h 53m 0s", "66d 25m 0s");
+StelMovementMgr.zoomTo(210, 5);
+core.wait(delay1);
+
+ConstellationMgr.setArtIntensity(0.6);
+SolarSystem.setFlagLabels(false);
+
+
+ConstellationMgr.setFlagIsolateSelected(true);
+ConstellationMgr.setFlagLabels(true);
+ConstellationMgr.setFlagArt(true);
+
+for(i=0; i<constellations.length; i++)
+{
+	core.selectObjectByName(constellations[i]);
+	core.wait(delay1);
+}
+
+core.wait(delay1);
+GridLinesMgr.setFlagEclipticLine(true);
+ConstellationMgr.setFlagBoundaries(true);
+
+ConstellationMgr.setFlagLabels(false);
+SolarSystem.setFlagLabels(true);
+
+

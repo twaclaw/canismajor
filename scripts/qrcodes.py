@@ -28,6 +28,7 @@ def create_qr_grid(
     qr_size: int = 100,
     spacing: int = 10,
     output_file: str = "output.svg",
+    max_size: int | None = None,
 ):
     cols, rows = grid_size
 
@@ -35,14 +36,18 @@ def create_qr_grid(
     svg_footer = "</svg>"
     svg_content = [svg_header]
 
-    max_size = 0
+    max_size_ = 0
     qrcodes = []
     sizes = []
+
     for d in data_list:
         qr_svg, size = create_qr_code(d, box_size=4, border=0)
         qrcodes.append(qr_svg)
         sizes.append(size)
-        max_size = max(max_size, size)
+        max_size_ = max(max_size_, size)
+
+    if max_size is None:
+        max_size = max_size_
 
     scaling_factors = [max_size / size for size in sizes]
 
@@ -74,14 +79,38 @@ def main():
     parser.add_argument(
         "--output", type=str, help="Output file name", default="output.svg"
     )
+    parser.add_argument(
+        "--what",
+        type=str,
+        help="What to generate [C]onstellations ,[O]bjects, [S]cripts",
+        default="COS",
+    )
     args = parser.parse_args()
 
     with open(args.conf, "r") as file:
         conf = safe_load(file)
-        constellations = conf["constellations"].keys()
 
-    grid_size = (8, 11)  # 88 constellations
-    create_qr_grid(constellations, grid_size, qr_size=100, spacing=0)
+        data = []
+        if "C" in args.what:
+            constellations = conf["constellations"].keys()
+            data.extend(list(constellations))
+        if "O" in args.what:
+            objects = conf["objects"]
+            data.extend(objects)
+        if "S" in args.what:
+            direct_scripts = [
+                k
+                for k in conf["scripts"].keys()
+                if k not in ["constellation", "object"]
+            ]
+            data.extend(direct_scripts)
+
+        if "C" in args.what:
+            constellations = conf["constellations"].keys()
+            data = list(constellations)
+
+    grid_size = (8, 11)
+    create_qr_grid(data, grid_size, qr_size=90, spacing=10, max_size=200)
 
 
 if __name__ == "__main__":
