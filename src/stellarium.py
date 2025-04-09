@@ -4,7 +4,15 @@ import logging
 import aiofiles
 import httpx
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("canismajor-stellarium")
+try:
+    from systemd import journal
+    logger.propagate = False
+    logger.addHandler(journal.JournaldLogHandler())
+    logger.setLevel(logging.INFO)
+except ImportError:
+    ...
+
 
 
 class Script:
@@ -59,7 +67,7 @@ class Stellarium:
             response = await self.client.get(f"{self.url}/{endpoint}")
             return response.json()
         except httpx.RequestError:
-            logger.warning(f"Failed to fetch data from {self.url}/{endpoint}")
+            logger.debug(f"Failed to fetch data from {self.url}/{endpoint}")
             return None
         except Exception:
             return response.text
@@ -69,7 +77,7 @@ class Stellarium:
             response = await self.client.post(f"{self.url}/{endpoint}", data=data)
             return response.json()
         except httpx.RequestError:
-            logger.warning(f"Failed to post data to {self.url}/{endpoint}")
+            logger.debug(f"Failed to post data to {self.url}/{endpoint}")
             return None
         except Exception:  # JSONDecoderError:
             return response.text

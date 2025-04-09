@@ -14,7 +14,17 @@ try:
 except ImportError:
     ...
 
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("canismajor-main")
+
+try:
+    from systemd import journal
+
+    logger.propagate = False
+    logger.addHandler(journal.JournaldLogHandler())
+    logger.setLevel(logging.INFO)
+except ImportError:
+    ...
 
 
 class Behavior(StrEnum):
@@ -29,24 +39,23 @@ class Behavior(StrEnum):
 
 class Validator:
     def __init__(self, conf):
-        self.languate = conf["stellarium"]["objects_language"]
+        self.language = conf["stellarium"]["objects_language"]
+        assert self.language in ["english", "native"]
         self.objects = conf["objects"]["objects"]
         self.direct_scripts = [
             k for k in conf["scripts"].keys() if k not in ["constellation", "object"]
         ]
-        if self.languate == "english":
-            self.constellations = conf["objects"]["constellations"].values()
-        else:
-            self.constellations = conf["objects"]["constellations"].keys()
+        self.constellations = conf["objects"]["constellations"]
 
     def validate(self, obj) -> tuple[str, str] | None:
-        if obj in self.constellations:
-            return obj, "constellation"
         if obj in self.objects:
             return obj, "object"
         if obj in self.direct_scripts:
             return obj, "direct_script"
-
+        if obj in self.constellations.keys():
+            if self.language == "english":
+                return self.constellations[obj], "constellation"
+            return obj, "constellation"
         return None
 
 
@@ -63,6 +72,7 @@ async def run_stellarium_script(
         res = validator.validate(obj)
         if res:
             obj, typ = res
+            logger.debug(f"Object '{obj}' found in configuration. Type: {typ}")
             if behavior == Behavior.STOP:
                 await client.stop_script()
             elif behavior == Behavior.WAIT:
@@ -83,6 +93,7 @@ async def run_stellarium_script(
 async def qr_code_reader(queue):
     while True:
         obj = await aioconsole.ainput(">>")
+        logger.debug(f"Received QR code: {obj}")
         await queue.put(obj)
         await asyncio.sleep(1)
 
