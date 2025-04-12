@@ -1,10 +1,13 @@
 //
 
 var constellations = _OBJECTS_LIST;
+var delay_stars_only = _DELAY_STARS_ONLY;
+var delay_art = _DELAY_ART;
 var delay1 = _DELAY1;
 var delay2 = _DELAY2;
 var final_fov = _FINAL_FOV;
 var atmosphere = _ATMOSPHERE;
+var lines_thickness = 1;
 
 core.clear("starchart");
 
@@ -23,7 +26,7 @@ ConstellationMgr.setFlagLines(false);
 ConstellationMgr.setFlagLabels(false);
 ConstellationMgr.setFlagIsolateSelected(true);
 ConstellationMgr.setArtIntensity(0.6);
-ConstellationMgr.setConstellationLineThickness(2);
+ConstellationMgr.setConstellationLineThickness(lines_thickness);
 SolarSystem.setFlagLabels(false);
 GridLinesMgr.setFlagEclipticLine(false);
 
@@ -38,15 +41,14 @@ for (i=0; i<constellations.length; i++)
 	objName = constellations[i];
 	core.selectObjectByName(objName);
 	StelMovementMgr.autoZoomIn(6);
-	core.wait(delay1);
 	StelMovementMgr.zoomTo(40,8);
-	core.wait(delay2);
+	core.wait(delay_stars_only);
 	ConstellationMgr.setFlagLines(true);
 	StarMgr.setFlagLabels(true);
 	core.wait(delay2);
 	StarMgr.setFlagLabels(false);
 	ConstellationMgr.setFlagArt(true);
-	core.wait(delay2);
+	core.wait(delay_art);
 	StelMovementMgr.zoomTo(80,8);
 	ConstellationMgr.setFlagIsolateSelected(false);
 	core.wait(delay2);

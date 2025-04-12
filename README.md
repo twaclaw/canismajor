@@ -90,11 +90,11 @@ The application has a queue waiting for the names of the objects to be selected 
 
 ### Names and scripts
 
-- If the name is one of the keys in the `objects:constellations` dictionary in the [configuration file](conf.yaml) (for example "Andromeda" or "Ursa Major"), then the [constellations](./templates/constellations.ssc) template is used to select the constellation.
+- If the name is one of the keys in the `objects:constellations` dictionary in the [configuration file](conf.yaml) (for example "Andromeda" or "Ursa Major"), then the [constellations](./templates/_constellations.ssc) template is used to select the constellation.
 
-- If the name is one of the items in the `objects:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object](./templates/object.ssc) template is used to select the object. Feel free to add more objects to the list.
+- If the name is one of the items in the `objects:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object](./templates/_objects.ssc) template is used to select the object. Feel free to add more objects to the list.
 
-- If the name is one of the keys, other than "constellations" and "objects", in the `scripts` dictionary in the [configuration file](conf.yaml) (for example "zodiac2"), then the script with the same name in the [templates](./templates) folder will be executed without parameters. Feel free to create additional scripts.
+- If the name is one of the keys, other than "constellations" and "objects", in the `scripts` dictionary in the [configuration file](conf.yaml) (for example "zodiac2"), then the script with the same name in the [templates](./templates) folder will be executed without parameters. **If you add new scripts, choose the names so that they do not conflict with existing Stellarium scripts.**
 
 - If the name is one of the scripts included in the official Stellarium distribution, this script will be executed without modifications.
 

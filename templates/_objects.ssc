@@ -40,4 +40,3 @@ for (i=0; i < objects.length; i++)
 }
 
 StelMovementMgr.zoomTo(final_fov,8);
-

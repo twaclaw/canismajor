@@ -62,7 +62,10 @@ class Script:
 
         if self.template:
             objects = name if isinstance(name, list) else [name]
-            modified_script = self.script.replace("_OBJECTS_LIST", str(objects))
+            objects_list = ", ".join(f'"{item}"' for item in objects)
+            modified_script = self.script.replace(
+                "_OBJECTS_LIST", f"new Array({objects_list})"
+            )
 
             async with aiofiles.open(self.script_path, "w") as f:
                 await f.write(modified_script)

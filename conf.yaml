@@ -32,15 +32,17 @@ qrcode_reader:
 
 scripts:
   constellation: # don't change this name
-    script_name: constellations.ssc
+    script_name: _constellations.ssc
     args:
+      _DELAY_STARS_ONLY: 15
+      _DELAY_ART: 10
       _DELAY1: 3
       _DELAY2: 7
       _FINAL_FOV: 150
       _ATMOSPHERE: false
 
   object: # don't change this name
-    script_name: objects.ssc
+    script_name: _objects.ssc
     args:
       _DELAY1: 5
       _DELAY2: 10
