@@ -130,7 +130,14 @@ def main():
 
         data = list(constellations.keys())
         grid_size = (8, 11)
-        create_qr_grid(data, grid_size, qr_size=90, spacing=10, max_size=args.size)
+        create_qr_grid(
+            data,
+            grid_size,
+            qr_size=90,
+            spacing=10,
+            max_size=args.size,
+            output_file=args.output,
+        )
 
     elif args.command == "objects":
         with open(args.conf, "r") as file:
@@ -148,7 +155,14 @@ def main():
                 data.extend(direct_scripts)
 
         grid_size = (8, 11)
-        create_qr_grid(data, grid_size, qr_size=90, spacing=10, max_size=200)
+        create_qr_grid(
+            data,
+            grid_size,
+            qr_size=90,
+            spacing=10,
+            max_size=200,
+            output_file=args.output,
+        )
 
     elif args.command == "single":
         if args.data:
