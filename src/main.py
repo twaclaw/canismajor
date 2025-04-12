@@ -11,13 +11,7 @@ from yaml import safe_load
 from hid import QRCodeReader
 from stellarium import ScriptType, Stellarium
 
-try:
-    from speech import SpeechMatch
-except ImportError:
-    ...
-
-
-logger = logging.getLogger("canismajor-main")
+logger = logging.getLogger("canismajor")
 
 try:
     from systemd import journal

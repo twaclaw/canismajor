@@ -6,15 +6,7 @@ from typing import Any
 import aiofiles
 import httpx
 
-logger = logging.getLogger("canismajor-stellarium")
-try:
-    from systemd import journal
-
-    logger.propagate = False
-    logger.addHandler(journal.JournaldLogHandler())
-    logger.setLevel(logging.INFO)
-except ImportError:
-    ...
+logger = logging.getLogger("canismajor")
 
 
 class ScriptType(Enum):
