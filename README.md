@@ -122,10 +122,13 @@ When the focus (mouse over) is on the console (terminal), this method can be use
 python scripts/qrcodes.py --help
 
 # For example to generate the QR codes for the 88 constellations on a single page:
-python scripts/qrcodes.py --output codes_constellations.svg --what C
+python scripts/qrcodes.py --output codes_constellations.svg constellations
 
 # to generate the QR codes for the objects and scripts:
-python scripts/qrcodes.py --output objects_and_scripts.svg --what SO
+python scripts/qrcodes.py --output objects_and_scripts.svg objects --conf conf.yaml --what SO
+
+# or to generate a single QR code (exact spelling, case sensitive):
+python scripts/qrcodes.py --output canis_major.svg single --data "Canis Major"
 ```
 
 # Instructions to install on a Rapsberry Pi
