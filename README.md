@@ -69,7 +69,7 @@ pip install -e . # on the raspberry pi: pip install -e .[rpi]
 Modify the [conf.yaml](conf.yaml) configuration file. In particular:
 
 - Make sure that the folder containing the Stellarium scripts is listed under `script_paths`
-- Check which language the installed version of Stellarium uses to select the constellations. For example, version 24.4 uses `native` names, e.g., "Orion", "Canis Major", "Gemini", etc., while version 25.1 uses English names, e.g., "Hunter", "Great Dog", "Twins", etc. Set `objects_language` accordingly, either "english" or "native" (you can use the search function CTRL + F to find out which language is used in your Stellarium version).
+- Check which language the installed version of Stellarium uses to select the constellations. For example, version 24.4 uses `native` names, e.g., "Orion", "Canis Major", "Gemini", etc., while version 25.1 uses English names, e.g., "Hunter", "Great Dog", "Twins", etc. Set `constellations_language` accordingly, either "english" or "native" (you can use the search function CTRL + F to find out which language is used in your Stellarium version).
 
 ### Step 6
 
@@ -85,9 +85,9 @@ The application has a queue waiting for the names of the objects to be selected 
 
 ### Names and scripts
 
-- If the name is one of the keys in the `objects:constellations` dictionary in the [configuration file](conf.yaml) (for example "Andromeda" or "Ursa Major"), then the [constellations](./templates/_constellations.ssc) template is used to select the constellation.
+- If the name is one of the keys in the `constellations` dictionary defined in [stellarium.py](./src/stellarium.py) (for example "Andromeda" or "Ursa Major"), then the [constellations](./templates/_constellations.ssc) template is used to select the constellation.
 
-- If the name is one of the items in the `objects:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object](./templates/_objects.ssc) template is used to select the object. Feel free to add more objects to the list.
+- If the name is one of the items in the `search:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object](./templates/_objects.ssc) template is used to select the object. Feel free to add more objects to the list.
 
 - If the name is one of the keys, other than "constellations" and "objects", in the `scripts` dictionary in the [configuration file](conf.yaml) (for example "zodiac2"), then the script with the same name in the [templates](./templates) folder will be executed without parameters. **If you add new scripts, choose the names so that they do not conflict with existing Stellarium scripts.**
 

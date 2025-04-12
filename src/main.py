@@ -9,7 +9,7 @@ import aioconsole
 from yaml import safe_load
 
 from hid import QRCodeReader
-from stellarium import ScriptType, Stellarium
+from stellarium import ScriptType, Stellarium, constellations
 
 logger = logging.getLogger("canismajor")
 
@@ -38,14 +38,13 @@ class NamesValidator:
     """
 
     def __init__(self, conf: dict[str, Any], stellarium_scripts_path: str):
-        self.language = conf["stellarium"]["objects_language"]
+        self.language = conf["stellarium"]["constellations_language"]
         assert self.language in ["english", "native"]
-        self.objects = conf["objects"]["objects"]
+        self.objects = conf["search"]["objects"]
         self.stellarium_scripts_path = stellarium_scripts_path
         self.standalone_scripts = [
             k for k in conf["scripts"].keys() if k not in ["constellation", "object"]
         ]
-        self.constellations = conf["objects"]["constellations"]
 
     def validate(self, obj) -> tuple[str, ScriptType] | None:
         """
@@ -56,9 +55,9 @@ class NamesValidator:
             return obj_title, ScriptType.PARAMS_SCRIPT_OBJECTS
         if obj in self.standalone_scripts:
             return obj, ScriptType.STANDALONE_SCRIPT
-        if obj_title in self.constellations.keys():
+        if obj_title in constellations.keys():
             if self.language == "english":
-                return self.constellations[
+                return constellations[
                     obj_title
                 ], ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
             return obj_title, ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
