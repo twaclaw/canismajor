@@ -46,9 +46,11 @@ class Script:
 
             for arg in self.args:
                 value = self.args[arg]
-                value = str(value)
                 if isinstance(value, bool):
-                    value = value.lower()
+                    value = str(value).lower()
+                else:
+                    value = str(value)
+
                 self.script = self.script.replace(arg, value)
 
     async def replace_and_save(self, name: list[str] | str):

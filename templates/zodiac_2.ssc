@@ -48,5 +48,3 @@ ConstellationMgr.setFlagBoundaries(true);
 
 ConstellationMgr.setFlagLabels(false);
 SolarSystem.setFlagLabels(true);
-
-

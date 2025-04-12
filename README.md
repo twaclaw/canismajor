@@ -13,7 +13,7 @@ In a way, I see this project as an extension of the book. I extended the book wi
 
 # Project description
 
-This project is basically a remote control for Stellarium. It uses the API provided by the remote control plugin to trigger scripts written in the Stellarium scripting engine. The objects and animations to be displayed are controlled by QR codes (pasted in the corresponding constellations on the book), or by voice (WIP), or by an RFID reader (not yet implemented).
+This project is basically a remote control for Stellarium. It uses the API provided by the remote control plugin to trigger scripts written in the Stellarium scripting engine. The objects and animations to be displayed are controlled by QR codes (pasted in the corresponding constellations on the book).
 
 ![](./img/block_diagram.svg)
 
@@ -90,30 +90,9 @@ The application has a queue waiting for the names of the objects to be selected 
 
 ### Names and scripts
 
-- If the name is one of the keys in the `objects:constellations` dictionary in the [configuration file](conf.yaml) (for example "Andromeda" or "Ursa Major"), then the [constellations.scc](./templates/constellations.ssc) template is used to select the constellation.
+- If the name is one of the keys in the `objects:constellations` dictionary in the [configuration file](conf.yaml) (for example "Andromeda" or "Ursa Major"), then the [constellations](./templates/constellations.ssc) template is used to select the constellation.
 
-```yaml
-objects:
-  constellations:
-    Andromeda: Chained Maiden
-    Antlia: Air Pump
-    Apus: Bird of Paradise
-    Aquarius: Water Bearer
-    Aquila: Eagle
-    ...
-```
-
-- If the name is one of the items in the `objects:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object.scc](./templates/object.ssc) template is used to select the object. Feel free to add more objects to the list.
-
-```yaml
-
-  objects:
-    - Mercury
-    - Venus
-    - Moon
-    - Mars
-    ...
-```
+- If the name is one of the items in the `objects:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object](./templates/object.ssc) template is used to select the object. Feel free to add more objects to the list.
 
 - If the name is one of the keys, other than "constellations" and "objects", in the `scripts` dictionary in the [configuration file](conf.yaml) (for example "zodiac2"), then the script with the same name in the [templates](./templates) folder will be executed without parameters. Feel free to create additional scripts.
 
