@@ -2,7 +2,7 @@
 
 > A sky projection based on Stellarium for very curious and inquisitive children
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/7/75/Planisph%C3%A6ri_c%C5%93leste.jpg"></img>
+<img src="./img/planispheri_celeste.jpg"></img>
 
 In Carl Sagan's Contact, SETI detects an intelligent signal coming from the star Vega in the constellation Lyra. In The Invincible by Stanislaw Lem, the crew of the eponymous spaceship lands on the planet Regis III, in the constellation Auriga, and finds the ruins of an ancient Lyran civilization (apparently Lyrans are super-advanced, or at least very popular). And in The Three Body Problem by Cixin Liu, the invaders come from the constellation Centaurus.
 
