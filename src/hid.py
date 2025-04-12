@@ -18,8 +18,10 @@ class QRCodeReader:
         self.fd = open(self.device, "rb", buffering=0)
 
     def decode_char(self, char: int) -> str | None:
-        if char >= 0x04 and char <= 0x1C:
+        if char >= 0x04 and char <= 0x1D:
             return chr(ord("a") + char - 0x04)
+        elif char >= 0x1E and char <= 0x27:
+            return chr(ord("2") + char - 0x1F)
         elif char == self.special_chars["space"]:
             return " "
         elif char == self.special_chars["enter"]:

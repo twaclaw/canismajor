@@ -1,6 +1,7 @@
 [Unit]
 Description=Stellarium Projection
-After=multi-user.target
+Requires=stellarium.service
+PartOf=stellarium.service
 
 [Service]
 Environment=PYTHONUNBUFFERED=1

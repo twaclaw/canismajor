@@ -1,0 +1,10 @@
+[Unit]
+Description=Stellarium
+
+[Service]
+ExecStart=/home/pi/stellarium/build_24.4/src/stellarium --opengl-compat --platform xcb -f yes
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
