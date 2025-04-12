@@ -1,4 +1,4 @@
-// Name: Zodiac
+/// Name: Zodiac
 // Author: Matthew Gates
 // License: Public Domain
 // Version: 1.2
@@ -23,8 +23,9 @@ ConstellationMgr.setFlagLabels(false);
 ConstellationMgr.setFlagArt(false);
 ConstellationMgr.deselectConstellations();
 
+LandscapeMgr.setFlagAtmosphere(false);
 //core.setDate("2006:03:14T21:21:32");
-core.moveToRaDec("17h 53m 0s", "66d 25m 0s");
+//core.moveToRaDec("17h 53m 0s", "66d 25m 0s");
 StelMovementMgr.zoomTo(210, 5);
 core.wait(delay1);
 
@@ -48,3 +49,5 @@ ConstellationMgr.setFlagBoundaries(true);
 
 ConstellationMgr.setFlagLabels(false);
 SolarSystem.setFlagLabels(true);
+core.delay(delay2);
+GridLinesMgr.setFlagEclipticLine(false);

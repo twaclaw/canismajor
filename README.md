@@ -97,16 +97,9 @@ The application has a queue waiting for the names of the objects to be selected 
 
 The names can be passed to the application in one of the following ways:
 
-#### On the Raspberry Pi
-
-- By scanning a [QR code](./img/codes_constellations.svg) that encodes the corresponding object name. This approach assumes that the QR code scanner is identified as a keyboard (a HID device).
-- The list `controls` in the [configuration file](conf.yaml) should contain `qrcode`.
-- The console method described below can work if the application is called from the command line but not if it is run as a `systemd` service.
-
 #### On a Linux or Mac computer
 
 - By typing them into the standard input (console), which can be useful for debugging:
-- The list `controls` in the [configuration file](conf.yaml) should contain `console`.
 
 ```bash
 python -m main --conf conf.yaml
@@ -114,7 +107,19 @@ python -m main --conf conf.yaml
 >>
 ```
 
-When the focus (mouse over) is on the console (terminal), this method can be used to test QR Code scans with no configuration (or code) required for the scanner (because the scanner is detected as a keyboard).
+- The list `controls` in the [configuration file](conf.yaml) should contain `console`.
+
+The fact that the particular QR code reader I used is recognized as a keyboard is both good and bad. It is good because it is easy to test the QR reading functionality with no code and virtually no configuration. When the focus (mouse over) is on the console (terminal) where the application is running, the QR code readings are passed to the application as if they were typed on the keyboard.
+
+The reason why this is bad applies mainly to the Raspberry Pi. On the one hand, the HID device is read directly by the application, all good so far, but because the device is also recognized as a keyboard and the focus is on the Stellarium software, the QR code readings are interpreted as shortcuts and Stellarium ends up doing funny things.
+
+One way to prevent this is to disable all shortcuts in Stellarium (at least the alphabetical ones). See the `[shortcuts]` section in the [Stellarium example configuration file](./conf/stellarium/config.ini) for reference (shortcuts may be different in your Stellarium version).
+
+#### On the Raspberry Pi
+
+- By scanning a [QR code](./img/codes_constellations.svg) that encodes the corresponding object name. This approach assumes that the QR code scanner is identified as a keyboard (a HID device).
+- The list `controls` in the [configuration file](conf.yaml) should contain `qrcode`.
+- The console method described above can work if the application is called from the command line but not if it is run as a `systemd` service.
 
 [This image](./img/codes_constellations.svg) is an example with QR Codes corresponding to the 88 constellations. The script [qrcodes.py](./scripts/qrcodes.py) can be used to generate this file, as well as other QR Codes corresponding to other objects.
 
