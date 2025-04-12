@@ -57,14 +57,17 @@ class NamesValidator:
         """
         Introspects the kind of script to run based on the object name.
         """
-        if obj in self.objects:
-            return obj, ScriptType.PARAMS_SCRIPT_OBJECTS
+        obj_title = obj.title()
+        if obj_title in self.objects:
+            return obj_title, ScriptType.PARAMS_SCRIPT_OBJECTS
         if obj in self.standalone_scripts:
             return obj, ScriptType.STANDALONE_SCRIPT
-        if obj in self.constellations.keys():
+        if obj_title in self.constellations.keys():
             if self.language == "english":
-                return self.constellations[obj], ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
-            return obj, ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
+                return self.constellations[
+                    obj_title
+                ], ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
+            return obj_title, ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
         if obj in os.listdir(self.stellarium_scripts_path):
             return obj, ScriptType.STELLARIUM_SCRIPT
         return None

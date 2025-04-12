@@ -58,16 +58,11 @@ uv pip install -e . # on the raspberry pi: uv pip install -e .[rpi]
 
 Using `pip`:
 
-<details>
-<summary>Click to expand</summary>
-
 ```bash
 virtualenv venv --python 3.13 # or 3.11 or 3.12
 . venv/bin/activate
 pip install -e . # on the raspberry pi: pip install -e .[rpi]
 ```
-
-</details>
 
 ### Step 5
 
