@@ -1,9 +1,10 @@
 //
 
-var constellations = OBJECTS_LIST;
-var delay1 = DELAY1;
-var delay2 = DELAY2;
-var final_fov = FINAL_FOV;
+var constellations = _OBJECTS_LIST;
+var delay1 = _DELAY1;
+var delay2 = _DELAY2;
+var final_fov = _FINAL_FOV;
+var atmosphere = _ATMOSPHERE;
 
 core.clear("starchart");
 
@@ -12,12 +13,7 @@ core.setGuiVisible(false);
 GridLinesMgr.setFlagEquatorGrid(false);
 NebulaMgr.setFlagHints(false);
 
-ConstellationMgr.setConstellationDisplayStyle(1);
-var names = ConstellationMgr.getConstellationsEnglishNames();
-core.debug(names);
-
-var style = ConstellationMgr.getConstellationDisplayStyle();
-core.debug(style);
+ConstellationMgr.setConstellationDisplayStyle(1); // native style
 
 ConstellationMgr.deselectConstellations();
 
@@ -32,7 +28,7 @@ SolarSystem.setFlagLabels(false);
 GridLinesMgr.setFlagEclipticLine(false);
 
 StarMgr.setFlagLabels(false);
-LandscapeMgr.setFlagAtmosphere(false);
+LandscapeMgr.setFlagAtmosphere(atmosphere);
 LandscapeMgr.setFlagLandscape(false);
 LandscapeMgr.setFlagCardinalPoints(false);
 
@@ -40,8 +36,6 @@ LandscapeMgr.setFlagCardinalPoints(false);
 for (i=0; i<constellations.length; i++)
 {
 	objName = constellations[i];
-	var objName2 = core.translate(objName);
-	core.debug(objName2);
 	core.selectObjectByName(objName);
 	StelMovementMgr.autoZoomIn(6);
 	core.wait(delay1);
@@ -60,8 +54,5 @@ for (i=0; i<constellations.length; i++)
 	core.wait(delay2);
 	ConstellationMgr.setFlagLines(false);
 }
-
-core.selectObjectByName("");
-//core.selectConstellationByName("");
 
 StelMovementMgr.zoomTo(final_fov,8);

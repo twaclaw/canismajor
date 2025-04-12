@@ -2,16 +2,18 @@
 
 include("common_objects.inc");
 
-var objects = OBJECTS_LIST;
-var delay1 = DELAY1;
-var delay2 = DELAY2;
-var final_fov = FINAL_FOV;
+var objects = _OBJECTS_LIST;
+var delay1 = _DELAY1;
+var delay2 = _DELAY2;
+var final_fov = _FINAL_FOV;
 
 
+core.setGuiVisible(false);
 LandscapeMgr.setFlagCardinalPoints(false);
 LandscapeMgr.setFlagLandscape(false);
 LandscapeMgr.setFlagAtmosphere(false);
 SolarSystem.setFlagLabels(false);
+StarMgr.setFlagLabels(false);
 
 ConstellationMgr.setFlagArt(false);
 ConstellationMgr.setFlagBoundaries(false);
@@ -22,19 +24,18 @@ for (i=0; i < objects.length; i++)
 {
 	objName = objects[i];
 	core.selectObjectByName(objName, false);
-
+	core.wait(delay1);
 	StelMovementMgr.autoZoomIn(6);
-	core.wait(delay2);
+	core.wait(2*delay2);
 	StelMovementMgr.autoZoomOut(6);
-	core.wait(delay2);
 
-	//ConstellationMgr.setFlagArt(true);
-	ConstellationMgr.setFlagLines(true);
-	core.wait(delay1);
+	//GridLinesMgr.setFlagEclipticLine(true);
 	ConstellationMgr.setFlagArt(true);
-	core.wait(delay1);
+	core.wait(delay2);
+	//GridLinesMgr.setFlagEclipticLine(false);
 	ConstellationMgr.setFlagArt(false);
-	ConstellationMgr.setFlagLines(false);
+	//ConstellationMgr.setFlagLines(false);
+	StelMovementMgr.autoZoomIn(6);
 
 }
 

@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from enum import Enum, auto
+from typing import Any
 
 import aiofiles
 import httpx
@@ -7,6 +9,7 @@ import httpx
 logger = logging.getLogger("canismajor-stellarium")
 try:
     from systemd import journal
+
     logger.propagate = False
     logger.addHandler(journal.JournaldLogHandler())
     logger.setLevel(logging.INFO)
@@ -14,24 +17,39 @@ except ImportError:
     ...
 
 
+class ScriptType(Enum):
+    """
+    - STELLARIUM_SCRIPT: Scripts included in the Stellarium distribution. Run as they are.
+    - STANDALONE_SCRIPT: Custom script with no parameters
+    - PARAMS_SCRIPT_CONSTELLATIONS: Custom script received a list of  constellations as input
+    - PARAMS_SCRIPT_OBJECTS: Custom script received a list of objects as input
+    """
+
+    STELLARIUM_SCRIPT = auto()
+    STANDALONE_SCRIPT = auto()
+    PARAMS_SCRIPT_CONSTELLATIONS = auto()
+    PARAMS_SCRIPT_OBJECTS = auto()
+
 
 class Script:
-    def __init__(self, template: str, script: str, delay1: float, delay2: float, final_fov: int):
-        self.template = template
-        self.script_path = script
-        self.delay1 = delay1
-        self.delay2 = delay2
+    def __init__(self, scripts_path: str, script_name: str, args: dict[str, Any]):
+        self.template = f"templates/{script_name}"
+        self.script_path = f"{scripts_path}/{script_name}"
+        self.args = args
         self.script = None
-        self.final_fov = final_fov
-        self.id = self.script_path.rstrip("/").split("/")[-1]
+        self.id = script_name
 
     async def ainit(self):
         if self.template:
             async with aiofiles.open(self.template, "r") as f:
                 self.script = await f.read()
-            self.script = self.script.replace("DELAY1", str(self.delay1))
-            self.script = self.script.replace("DELAY2", str(self.delay2))
-            self.script = self.script.replace("FINAL_FOV", str(self.final_fov))
+
+            for arg in self.args:
+                value = self.args[arg]
+                value = str(value)
+                if isinstance(value, bool):
+                    value = value.lower()
+                self.script = self.script.replace(arg, value)
 
     async def replace_and_save(self, name: list[str] | str):
         """
@@ -42,7 +60,7 @@ class Script:
 
         if self.template:
             objects = name if isinstance(name, list) else [name]
-            modified_script = self.script.replace("OBJECTS_LIST", str(objects))
+            modified_script = self.script.replace("_OBJECTS_LIST", str(objects))
 
             async with aiofiles.open(self.script_path, "w") as f:
                 await f.write(modified_script)
@@ -51,13 +69,18 @@ class Script:
 class Stellarium:
     def __init__(
         self,
+        scripts_path: str,
         scripts: dict[str, dict[str, str]],
         url: str = "http://localhost",
         port: int = 8090,
     ):
         self.client = httpx.AsyncClient()
         self.url = f"{url}:{port}/api"
-        self.scripts = {key: Script(**values) for key, values in scripts.items()}
+        self.scripts = {}
+        self.scripts = {
+            key: Script(**({"scripts_path": scripts_path} | values))
+            for key, values in scripts.items()
+        }
 
     async def close(self):
         await self.client.aclose()
@@ -105,10 +128,26 @@ class Stellarium:
     async def stop_script(self):
         await self.post("scripts/stop")
 
-    async def focus(self, name: str | None = None, typ: str = "constellation"):
-        script = self.scripts.get(typ, None)
+    async def focus(
+        self, param: str | None = None, script_type: ScriptType | None = None
+    ):
+        if script_type is ScriptType.STELLARIUM_SCRIPT:
+            await self.run_script(param)
+
+        if script_type is ScriptType.STANDALONE_SCRIPT:
+            script = self.scripts.get(param, None)
+        elif script_type is ScriptType.PARAMS_SCRIPT_OBJECTS:
+            script = self.scripts.get("object", None)
+        else:
+            script = self.scripts.get("constellation", None)
+
         if not script:
-            logger.warning(f"Script {typ} not found")
+            logger.warning("Script not found")
             return
-        await script.replace_and_save(name)
+
+        if script_type in [
+            ScriptType.PARAMS_SCRIPT_CONSTELLATIONS,
+            ScriptType.PARAMS_SCRIPT_OBJECTS,
+        ]:
+            await script.replace_and_save(param)
         await self.run_script(script.id)

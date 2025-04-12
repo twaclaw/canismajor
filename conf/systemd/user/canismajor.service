@@ -1,11 +1,13 @@
 [Unit]
 Description=Stellarium Projection
-After=default.target
+After=multi-user.target
 
 [Service]
-ExecStart=/home/pi/urania/venv/bin/python -m main --conf /home/pi/urania/conf.yaml
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/home/pi/canismajor
+ExecStart=/home/pi/canismajor/venv/bin/python -m main --conf /home/pi/canismajor/conf.yaml
 Restart=always
 RestartSec=10s
 
 [Install]
-RequiredBy=default.target
+WantedBy=multi-user.target

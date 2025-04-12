@@ -1,13 +1,15 @@
 import argparse
 import asyncio
 import logging
-from concurrent.futures import ThreadPoolExecutor
+import os
 from enum import StrEnum
+from typing import Any
 
 import aioconsole
 from yaml import safe_load
 
-from stellarium import Stellarium
+from hid import QRCodeReader
+from stellarium import ScriptType, Stellarium
 
 try:
     from speech import SpeechMatch
@@ -22,7 +24,6 @@ try:
 
     logger.propagate = False
     logger.addHandler(journal.JournaldLogHandler())
-    logger.setLevel(logging.INFO)
 except ImportError:
     ...
 
@@ -37,29 +38,39 @@ class Behavior(StrEnum):
     WAIT = "wait"
 
 
-class Validator:
-    def __init__(self, conf):
+class NamesValidator:
+    """
+    Validates the objects names before passing them to Stellarium
+    """
+
+    def __init__(self, conf: dict[str, Any], stellarium_scripts_path: str):
         self.language = conf["stellarium"]["objects_language"]
         assert self.language in ["english", "native"]
         self.objects = conf["objects"]["objects"]
-        self.direct_scripts = [
+        self.stellarium_scripts_path = stellarium_scripts_path
+        self.standalone_scripts = [
             k for k in conf["scripts"].keys() if k not in ["constellation", "object"]
         ]
         self.constellations = conf["objects"]["constellations"]
 
-    def validate(self, obj) -> tuple[str, str] | None:
+    def validate(self, obj) -> tuple[str, ScriptType] | None:
+        """
+        Introspects the kind of script to run based on the object name.
+        """
         if obj in self.objects:
-            return obj, "object"
-        if obj in self.direct_scripts:
-            return obj, "direct_script"
+            return obj, ScriptType.PARAMS_SCRIPT_OBJECTS
+        if obj in self.standalone_scripts:
+            return obj, ScriptType.STANDALONE_SCRIPT
         if obj in self.constellations.keys():
             if self.language == "english":
-                return self.constellations[obj], "constellation"
-            return obj, "constellation"
+                return self.constellations[obj], ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
+            return obj, ScriptType.PARAMS_SCRIPT_CONSTELLATIONS
+        if obj in os.listdir(self.stellarium_scripts_path):
+            return obj, ScriptType.STELLARIUM_SCRIPT
         return None
 
 
-validator: Validator | None = None
+validator: NamesValidator | None = None
 
 
 async def run_stellarium_script(
@@ -69,6 +80,7 @@ async def run_stellarium_script(
     assert validator
     while True:
         obj = await queue.get()
+        logger.debug(f"Received object in queue: {obj}")
         res = validator.validate(obj)
         if res:
             obj, typ = res
@@ -90,55 +102,89 @@ async def run_stellarium_script(
             logger.warning(f"Object '{obj}' not found in configuration. Ignoring it.")
 
 
-async def qr_code_reader(queue):
-    while True:
-        obj = await aioconsole.ainput(">>")
-        logger.debug(f"Received QR code: {obj}")
-        await queue.put(obj)
-        await asyncio.sleep(1)
+async def console_reader(queue: asyncio.Queue):
+    try:
+        while True:
+            obj = await aioconsole.ainput(">>")
+            logger.debug(f"Received QR code: {obj}")
+            await queue.put(obj)
+            await asyncio.sleep(1)
+    except EOFError:
+        logger.error("Console reader task stopped")
 
 
 async def main():
     parser = argparse.ArgumentParser(description="Stellarium API client")
     parser.add_argument("--conf", type=str, help="YAML configuration file")
+    parser.add_argument("--log-level", type=str, help="Log level", default="INFO")
     args = parser.parse_args()
+
+    if args.log_level.upper() in logging._nameToLevel:
+        logger.setLevel(args.log_level.upper())
 
     with open(args.conf, "r") as file:
         conf = safe_load(file)
 
+    scripts_path: str | None = None
+    for p in conf["stellarium"]["script_paths"]:
+        if os.path.exists(p):
+            scripts_path = p
+            break
+
+    if not scripts_path:
+        raise RuntimeError("No Stellarium scripts path found in configuration")
+
     client = Stellarium(
+        scripts_path,
         conf["scripts"],
         port=conf["stellarium"]["port"],
     )
+
     global validator
-    validator = Validator(conf)
+    validator = NamesValidator(conf, scripts_path)
 
     if not await client.test():
         raise RuntimeError("Stellarium is not running")
 
     behavior = Behavior(conf["stellarium"]["behavior_previous_script"])
     timeout = conf["stellarium"]["timeout_previous_script"]
-    controls = {"qrcode", "asr", "rfid"}.intersection(set(conf["controls"]))
+    valid_controls = {"console", "qrcode", "asr", "rfid"}
+    controls = valid_controls.intersection(set(conf["controls"]))
+
     if not controls:
-        raise RuntimeError("No control options found in configuration")
+        raise RuntimeError(
+            "No valid controls found in configuration, at least one is required"
+        )
 
     queue = asyncio.Queue()
-    loop = asyncio.get_event_loop()  # check if required
 
     tasks = []
+
+    if "console" in controls:
+        try:
+            tasks.append(asyncio.create_task(console_reader(queue)))
+        except Exception as e:
+            logger.error(f"Error starting aioconsole: {e}")
+
+    if "qrcode" in controls:
+        try:
+            qrcode = QRCodeReader(
+                conf["qrcode_reader"]["device"],
+                conf["qrcode_reader"]["buffer_size"],
+            )
+            qrcode.open()
+            tasks.append(asyncio.create_task(qrcode.read(queue)))
+        except Exception as e:
+            logger.error(f"Error starting QR code reader: {e}")
+
+    if len(tasks) == 0:
+        raise RuntimeError(
+            "Any of the controls in the configuration could be initialized, at least one is required"
+        )
+
     tasks.append(
         asyncio.create_task(run_stellarium_script(queue, client, behavior, timeout))
     )
-
-    if "asr" in controls:
-        with ThreadPoolExecutor() as pool:
-            speech = SpeechMatch(
-                conf["stellarium_objects"], conf["stellarium"]["objects_language"]
-            )
-            loop.run_in_executor(pool, speech.listen, queue, loop)
-
-    if "qrcode" in controls:
-        tasks.append(asyncio.create_task(qr_code_reader(queue)))
 
     await asyncio.gather(*tasks)
 

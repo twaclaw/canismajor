@@ -10,7 +10,7 @@ class SpeechMatch:
         self.vocab = vocab if language == "english" else {word: word for word in vocab}
         self.phonetic = {word: metaphone(word) for word in vocab}
 
-    def listen(self, queue: asyncio.Queue, loop: asyncio.AbstractEventLoop):
+    def listen(self, queue: asyncio.Queue):
         recognizer = sr.Recognizer()
         mic = sr.Microphone()
         while True:
@@ -26,7 +26,7 @@ class SpeechMatch:
             command = command.title()
             if command in self.vocab:
                 command_english = self.vocab[command]
-                asyncio.run_coroutine_threadsafe(queue.put(command_english), loop)
+                queue.put_nowait(command_english)
                 continue
 
             phonetic = metaphone(command)
@@ -38,7 +38,7 @@ class SpeechMatch:
                 dist = levenshtein_distance(phonetic, self.phonetic[word])
                 if dist <= 1:
                     command_english = self.vocab[word]
-                    asyncio.run_coroutine_threadsafe(queue.put(command_english), loop)
+                    queue.put_nowait(command_english)
                     monotonic.clear()
                     break
 
@@ -50,7 +50,7 @@ class SpeechMatch:
             # If there is only one word with the smallest distance
             if len(monotonic) == 1:
                 command_english = self.vocab[monotonic[0][1]]
-                asyncio.run_coroutine_threadsafe(queue.put(command_english), loop)
+                queue.put_nowait(command_english)
                 continue
 
             # All matches corresponding to the smallest phonetic distance
@@ -60,6 +60,4 @@ class SpeechMatch:
 
             if len(possible_matches) == 1:
                 command_english = self.vocab[possible_matches[0]]
-                asyncio.run_coroutine_threadsafe(queue.put(command_english), loop)
-
-            # TODO: check if it is required to try further matching
+                queue.put_nowait(command_english)

@@ -10,8 +10,8 @@
 
 var constellations = new Array("Twins", "Crab", "Lion", "Maiden", "Scales", "Scorpion", "Serpent Bearer", "Archer", "Sea Goat", "Water Bearer", "Fishes", "Ram", "Bull");
 
-var delay1 = DELAY1;
-var delay2 = DELAY2;
+var delay1 = _DELAY1;
+var delay2 = _DELAY2;
 
 core.setSkyCulture("modern");
 core.clear("deepspace");

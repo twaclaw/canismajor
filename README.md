@@ -13,34 +13,188 @@ In a way, I see this project as an extension of the book. I extended the book wi
 
 # Project description
 
-This project is basically a remote control for Stellarium. It uses the API provided by the remote control plugin to trigger scripts written in the Stellarium scripting engine. The objects and animations to be displayed are controlled by QR codes (pasted in the corresponding constellations on the book), or by voice (coming soon), or by an RFID reader (coming soon).
+This project is basically a remote control for Stellarium. It uses the API provided by the remote control plugin to trigger scripts written in the Stellarium scripting engine. The objects and animations to be displayed are controlled by QR codes (pasted in the corresponding constellations on the book), or by voice (WIP), or by an RFID reader (not yet implemented).
 
 ![](./img/block_diagram.svg)
 
-Everything runs on a Raspberry Pi 5 connected to a projector.
+The application is designed in a way that it can run on a computer, such as a laptop running Linux or Mac, as well as a Raspberry Pi (I tried a Raspberry Pi 5).
 
-TODO: diagram raspberry pi, qrcode reader, qrcode, projector.
+# Steps to reproduce
 
-# Instructions
+### Step 1
 
-Installing Stellarium
+Install Stellarium (follow the instructions for your OS, package manager, etc.)
+
+### Step 2
+
+Enable and make sure the remote control plugin in Stellarium is running. You can do this in the UI or by modifying the `config.ini` file. See the `[Remote Control]` section in the [example Stellarium configuration file](./conf/stellarium/config.ini) for reference.
+
+You can check if the API provided by the remote control plugin is working by calling e.g:
+
+```bash
+curl -X POST -d 'id=zodiac.ssc' http://localhost:8090/api/scripts/run
+```
+
+### Step 3
+
+Download this code
+
+```bash
+git clone https://github.com/twaclaw/canismajor.git
+cd canismajor
+```
+
+### Step 4
+
+Install the Python application.
+
+Using [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv venv venv --python 3.13 # or 3.11 or 3.12
+. venv/bin/activate
+uv pip install -e . # on the raspberry pi: uv pip install -e .[rpi]
+```
+
+Using `pip`:
+
+<details>
+<summary>Click to expand</summary>
+
+```bash
+virtualenv venv --python 3.13 # or 3.11 or 3.12
+. venv/bin/activate
+pip install -e . # on the raspberry pi: pip install -e .[rpi]
+```
+
+</details>
+
+### Step 5
+
+Modify the [conf.yaml](conf.yaml) configuration file. In particular:
+
+- Make sure that the folder containing the Stellarium scripts is listed under `script_paths`
+- Check which language the installed version of Stellarium uses to select the constellations. For example, version 24.4 uses `native` names, e.g., "Orion", "Canis Major", "Gemini", etc., while version 25.1 uses English names, e.g., "Hunter", "Great Dog", "Twins", etc. Set `objects_language` accordingly, either "english" or "native" (you can use the search function CTRL + F to find out which language is used in your Stellarium version).
+
+### Step 6
+
+Run the application
+
+```bash
+python -m main --conf conf.yaml
+```
+
+# How to use the application
+
+The application has a queue waiting for the names of the objects to be selected (constellations, planets, etc.), or otherwise the name of the script to be executed. Note that the names are case sensitive. The following logic and priorities are used:
+
+### Names and scripts
+
+- If the name is one of the keys in the `objects:constellations` dictionary in the [configuration file](conf.yaml) (for example "Andromeda" or "Ursa Major"), then the [constellations.scc](./templates/constellations.ssc) template is used to select the constellation.
+
+```yaml
+objects:
+  constellations:
+    Andromeda: Chained Maiden
+    Antlia: Air Pump
+    Apus: Bird of Paradise
+    Aquarius: Water Bearer
+    Aquila: Eagle
+    ...
+```
+
+- If the name is one of the items in the `objects:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object.scc](./templates/object.ssc) template is used to select the object. Feel free to add more objects to the list.
+
+```yaml
+
+  objects:
+    - Mercury
+    - Venus
+    - Moon
+    - Mars
+    ...
+```
+
+- If the name is one of the keys, other than "constellations" and "objects", in the `scripts` dictionary in the [configuration file](conf.yaml) (for example "zodiac2"), then the script with the same name in the [templates](./templates) folder will be executed without parameters. Feel free to create additional scripts.
+
+- If the name is one of the scripts included in the official Stellarium distribution, this script will be executed without modifications.
+
+### How names are passed to the application
+
+The names can be passed to the application in one of the following ways:
+
+#### On the Raspberry Pi
+
+- By scanning a [QR code](./img/codes_constellations.svg) that encodes the corresponding object name. This approach assumes that the QR code scanner is identified as a keyboard (a HID device).
+- The list `controls` in the [configuration file](conf.yaml) should contain `qrcode`.
+- The console method described below can work if the application is called from the command line but not if it is run as a `systemd` service.
+
+#### On a Linux or Mac computer
+
+- By typing them into the standard input (console), which can be useful for debugging:
+- The list `controls` in the [configuration file](conf.yaml) should contain `console`.
+
+```bash
+python -m main --conf conf.yaml
+>>Auriga
+>>
+```
+
+When the focus (mouse over) is on the console (terminal), this method can be used to test QR Code scans with no configuration (or code) required for the scanner (because the scanner is detected as a keyboard).
+
+[This image](./img/codes_constellations.svg) is an example with QR Codes corresponding to the 88 constellations. The script [qrcodes.py](./scripts/qrcodes.py) can be used to generate this file, as well as other QR Codes corresponding to other objects.
+
+```bash
+python scripts/qrcodes.py --help
+
+# For example to generate the QR codes for the 88 constellations on a single page:
+python scripts/qrcodes.py --output codes_constellations.svg --what C
+
+# to generate the QR codes for the objects and scripts:
+python scripts/qrcodes.py --output objects_and_scripts.svg --what SO
+```
+
+# Instructions to install on a Rapsberry Pi
+
+## Hardware
+
+- Raspberry Pi 5 (other models might work) with an SSD disk for better performance
+- A QR scan code reader
+- An HDMI projector or screen
+
+My setup looks like this:
+
+![](./img/connection.svg)
+
+## Software and configuration
+
+### Install Stellarium
+
+It can be installed either by `snap` or by compiling from source. I found that version `v24.4` against Qt 5 generally works better on this device, and built it from source.
+
+<details>
+<summary>Using snap</summary>
 
 ```bash
 sudo apt update
 sudo apt install snapd
 sudo reboot
 sudo snap install snapd
-sudo snap install stellarium-daily
+sudo snap install stellarium-daily # latest version
 ```
 
-Build from source
+</details>
+
+<details>
+<summary>Building from source</summary>
 
 ```bash
 git clone https://github.com/Stellarium/stellarium.git
-mkdir build && cd build
+cd stellarium
+git checkout v24.4 # or any other version
+mkdir build24.4 && cd build24.4
 
 # install dependencies, see: https://github.com/Stellarium/stellarium/blob/master/BUILDING.md
-
 # v24.4 and head working with Qt5
 sudo apt install build-essential cmake zlib1g-dev libgl1-mesa-dev libdrm-dev gcc g++ \
                  graphviz doxygen gettext git libgps-dev \
@@ -53,21 +207,16 @@ sudo apt install build-essential cmake zlib1g-dev libgl1-mesa-dev libdrm-dev gcc
                  libexiv2-dev libnlopt-cxx-dev libtbb-dev libtbb2 libqt5concurrent5 \
                  libmd4c-dev libmd4c-html0-dev
 
-# Qt6 dependencies
-sudo apt install build-essential cmake zlib1g-dev libgl1-mesa-dev libdrm-dev libglx-dev \
-                 gcc g++ graphviz doxygen gettext git libxkbcommon-x11-dev libgps-dev \
-                 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-pulseaudio \
-                 gstreamer1.0-libav gstreamer1.0-vaapi \
-                 qt6-base-private-dev qt6-multimedia-dev qt6-positioning-dev qt6-tools-dev \
-                 qt6-tools-dev-tools qt6-base-dev-tools qt6-qpa-plugins qt6-image-formats-plugins \
-                 qt6-l10n-tools qt6-webengine-dev qt6-webengine-dev-tools libqt6charts6-dev \
-                 libqt6charts6 libqt6opengl6-dev libqt6positioning6-plugins libqt6serialport6-dev \
-                 qt6-base-dev libqt6webenginecore6-bin libqt6webengine6-data \
-                 libexiv2-dev libnlopt-cxx-dev libqt6concurrent6 libmd4c-dev libmd4c-html0-dev
 
-   cmake -DCMAKE_BUILD_TYPE="Release" ../stellarium
-   nice make -j4
+cmake -DCMAKE_BUILD_TYPE="Release" ../stellarium
+nice make -j4
 ```
+
+</details>
+
+### Making stellarium run on startup
+
+For instance:
 
 ```bash
 STELARIUM_PATH=~/.config/autostart/stellaium.desktop
@@ -77,43 +226,69 @@ if [! -f $STELARIUM_PATH]; then
   Type=Application
   Name=Stellarium
   NoDisplay=false
-  Exec=snap run stellarium-daily.stellarium --opengl-compat -f yes
+  Exec=/home/pi/stellarium/build24.4/src/stellarium --opengl-compat --platform xcb -f yes
   EOF
 fi
 ```
 
-Installing `uv`
+### Installing `uv`
 
-See [docs](https://docs.astral.sh/uv/getting-started/installation/)
+See [uv docs](https://docs.astral.sh/uv/getting-started/installation/)
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Libraries for audio (check if required)
+### Installing the Desktop UI
 
-```bash
-sudo apt-get install libportaudio2 libportaudiocpp0 portaudio19-dev
-```
-
-How to keep the HDMI port on:
-
-See [this](https://forums.raspberrypi.com/viewtopic.php?t=363503) discussion.
-
-Edit `/boot/cmdline.txt` and add `video=HDMI-A-1:1920x1080@60` (or any other resolution) to the end of the line.
-
-To verify if the port is connected use `kmsprint`.
-
-To check the current configuration use `kmsprint -m` or `xrandr`.
-
-# UI
+If you are coming from a headless Raspberry Pi, you will need to install the UI.
 
 ```bash
 sudo apt-get install raspberrypi-ui-mods
-
 ```
 
-# References
+### Running as a service
+
+The application can run as a `systemd` service.
+
+```bash
+mkdir -p $HOME/.config/systemd/user
+cp conf/systemd/canismajor.service $HOME/.config/systemd/user/
+systemctl --user enable canismajor.service
+systemctl --user start canismajor.service
+loginctl enable-linger
+```
+
+### Configuring the QR code scanner
+
+The QR code scanner I used is detected as a HID keyboard device (`/dev/hidraw0`). You can use `lsusb` to get information about this device, for example to create a `udev` rule.
+
+```bash
+lsusb
+Bus 001 Device 014: ID 1a86:5456 QinHeng Electronics USB Keyboard
+
+cat /etc/udev/rules.d/99-qrcode-reader-permissions.rules
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="5456", MODE="0666"
+```
+
+I reversed-engineered the protocol by checking:
+
+```bash
+sudo hexdump -C /dev/hidraw0
+```
+
+# Contributing
+
+This is tiny project but your contributions are more than welcome. If you have any suggestions, ideas, or improvements, please feel free to open an issue or a pull request. If you have any questions or want to start a discussion, please feel free to reach out.
+
+Have a look at the [contributing guidelines](./CONTRIBUTING.md) for more information.
+
+---
+
+# References and Credits
 
 - [Stellarium](https://stellarium.org/)
+- [Constellations by Govert Schilling](https://www.goodreads.com/book/show/42275188-constellations)
 - Title image: A celestial map by the Dutch cartographer Frederik de Wit, 1670, [Wikimedia](https://en.wikipedia.org/wiki/Star_chart#/media/File:Planisph%C3%A6ri_c%C5%93leste.jpg)
+
+---

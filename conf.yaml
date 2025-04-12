@@ -10,35 +10,52 @@ stellarium:
   # - ignore: ignore the new script
   behavior_previous_script: wait
   timeout_previous_script: 120
+  templates_path: ./templates
+
+  # Script paths. The application will check for scripts in one of these paths
+  script_paths:
+    - /home/pi/stellarium/stellarium/scripts
+    - /Applications/Stellarium.app/Contents/Resources/scripts
 
 # Controls
+# - console: standard input
 # - qrcode: QR code scanner
 # - asr: Automatic Speech Recognition
 # - rfid: RFID reader (over websocket)
 controls:
   - qrcode
+  - console
+
+qrcode_reader:
+  device: /dev/hidraw0
+  buffer_size: 16
 
 scripts:
-  constellation:
-    template: templates/constellations.ssc
-    script: /Applications/Stellarium.app/Contents/Resources/scripts/focus_const.ssc
-    delay1: 3
-    delay2: 7
-    final_fov: 150
+  constellation: # don't change this name
+    script_name: constellations.ssc
+    args:
+      _DELAY1: 3
+      _DELAY2: 7
+      _FINAL_FOV: 150
+      _ATMOSPHERE: false
 
-  object:
-    template: templates/objects.ssc
-    script: /Applications/Stellarium.app/Contents/Resources/scripts/focus_object.ssc
-    delay1: 5
-    delay2: 10
-    final_fov: 300
+  object: # don't change this name
+    script_name: objects.ssc
+    args:
+      _DELAY1: 5
+      _DELAY2: 10
+      _FINAL_FOV: 300
+      _ATMOSPHERE: false
 
+  # ------------------------------------------
+  # Add standalone (without arguments) scripts from here on
   zodiac2:
-    template: templates/zodiac2.ssc
-    script: /Applications/Stellarium.app/Contents/Resources/scripts/zodiac2.ssc
-    delay1: 1
-    delay2: 5
-    final_fov: 300
+    script_name: zodiac2.ssc
+    args:
+      _DELAY1: 1
+      _DELAY2: 5
+      _FINAL_FOV: 300
+      _ATMOSPHERE: false
 
 objects:
   constellations:
