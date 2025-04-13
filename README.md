@@ -193,9 +193,10 @@ sudo apt install build-essential cmake zlib1g-dev libgl1-mesa-dev libdrm-dev gcc
 cmake -DCMAKE_BUILD_TYPE="Release" ../stellarium
 nice make -j4
 ```
-</details>
 
 The executable will be in `build_folder/src/stellarium`.
+
+</details>
 
 ### Installing `uv`
 

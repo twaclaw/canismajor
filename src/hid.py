@@ -26,7 +26,8 @@ class QRCodeReader:
             return " "
         elif char == self.special_chars["enter"]:
             return "\n"
-        return None
+        # TODO: Add more character mappings as needed, e.g., _, -, /
+        return {}.get(char, None)
 
     async def read(self, queue: asyncio.Queue):
         if not self.fd:
