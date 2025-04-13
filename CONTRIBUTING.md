@@ -1,8 +1,10 @@
-Thanks a lot for you interest.
+# PRs and other forms of contributing are welcome!
 
-If you have ideas for improvements or want to contribute additional features, such as working on the speech recognition part so that it understands young children, etc. Your contributions are very welcome.
+**Thanks a lot for you interest!!!**
 
-# PRs are welcome!
+If you have ideas for improvements or want to contribute additional features, such as working on the speech recognition part so that it understands young children, adding awesome [templates](./templates/), etc. Your contributions are very welcome.
+
+## Steps to submit a pull request
 
 ### Fork [this repository](https://github.com/twaclaw/canismajor.git)
 
@@ -46,7 +48,6 @@ uv pip install -e ".[dev]"
 - Kindly, run `pre-commit`
 - Commit your changes
 - Push your changes to your forked repository
-
 
 ### Create a Pull Request
 

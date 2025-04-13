@@ -240,7 +240,7 @@ cat /etc/udev/rules.d/99-qrcode-reader-permissions.rules
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="5456", MODE="0666"
 ```
 
-I reversed-engineered the protocol by checking:
+I reversed-engineered the protocol implemented in [src/hid.py](src/hid.py) by checking:
 
 ```bash
 sudo hexdump -C /dev/hidraw0
