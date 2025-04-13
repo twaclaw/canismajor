@@ -193,25 +193,9 @@ sudo apt install build-essential cmake zlib1g-dev libgl1-mesa-dev libdrm-dev gcc
 cmake -DCMAKE_BUILD_TYPE="Release" ../stellarium
 nice make -j4
 ```
-
 </details>
 
-### Making stellarium run on startup
-
-For instance:
-
-```bash
-STELARIUM_PATH=~/.config/autostart/stellaium.desktop
-if [! -f $STELARIUM_PATH]; then
-  cat > $STELARIUM_PATH <<EOF
-  [Desktop Entry]
-  Type=Application
-  Name=Stellarium
-  NoDisplay=false
-  Exec=/home/pi/stellarium/build24.4/src/stellarium --opengl-compat --platform xcb -f yes
-  EOF
-fi
-```
+The executable will be in `build_folder/src/stellarium`.
 
 ### Installing `uv`
 
@@ -235,9 +219,11 @@ The application can run as a `systemd` service.
 
 ```bash
 mkdir -p $HOME/.config/systemd/user
-cp conf/systemd/canismajor.service $HOME/.config/systemd/user/
-systemctl --user enable canismajor.service
+cp conf/systemd/* $HOME/.config/systemd/user/
 systemctl --user start canismajor.service
+
+# optional
+systemctl --user enable canismajor.service
 loginctl enable-linger
 ```
 
