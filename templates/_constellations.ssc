@@ -10,7 +10,7 @@ var atmosphere = _ATMOSPHERE;
 var lines_thickness = 1;
 
 core.clear("starchart");
-
+core.setDate("now");
 
 core.setGuiVisible(false);
 GridLinesMgr.setFlagEquatorGrid(false);
@@ -41,7 +41,7 @@ for (i=0; i<constellations.length; i++)
 	objName = constellations[i];
 	core.selectObjectByName(objName);
 	StelMovementMgr.autoZoomIn(6);
-	StelMovementMgr.zoomTo(40,8);
+	StelMovementMgr.zoomTo(40,0.5*delay_stars_only);
 	core.wait(delay_stars_only);
 	ConstellationMgr.setFlagLines(true);
 	StarMgr.setFlagLabels(true);

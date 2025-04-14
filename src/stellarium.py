@@ -236,9 +236,6 @@ class Stellarium:
             logger.warning("Script not found")
             return
 
-        if script_type in [
-            ScriptType.PARAMS_SCRIPT_CONSTELLATIONS,
-            ScriptType.PARAMS_SCRIPT_OBJECTS,
-        ]:
+        if script_type != ScriptType.STELLARIUM_SCRIPT:
             await script.replace_and_save(param)
         await self.run_script(script.id)

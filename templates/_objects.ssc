@@ -9,6 +9,7 @@ var final_fov = _FINAL_FOV;
 
 
 core.setGuiVisible(false);
+core.setDate("now");
 LandscapeMgr.setFlagCardinalPoints(false);
 LandscapeMgr.setFlagLandscape(false);
 LandscapeMgr.setFlagAtmosphere(false);

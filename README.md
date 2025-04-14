@@ -19,6 +19,10 @@ This project is basically a remote control for Stellarium. It uses the API provi
 
 The application is designed in a way that it can run on a computer, such as a laptop running Linux or Mac, as well as a Raspberry Pi (I tried a Raspberry Pi 5).
 
+## Video
+
+[![Video](https://img.youtube.com/vi/T3EH-_-DCJs/0.jpg)](https://www.youtube.com/watch?v=T3EH-_-DCJs)
+
 # Steps to reproduce
 
 ### Step 1
@@ -85,9 +89,9 @@ The application has a queue waiting for the names of the objects to be selected 
 
 ### Names and scripts
 
-- If the name is one of the keys in the `constellations` dictionary defined in [stellarium.py](./src/stellarium.py) (for example "Andromeda" or "Ursa Major"), then the [constellations](./templates/_constellations.ssc) template is used to select the constellation.
+- If the name is one of the keys in the `constellations` dictionary defined in [stellarium.py](./src/stellarium.py) (for example "Andromeda" or "Ursa Major"), then the [constellations template](./templates/_constellations.ssc) is used to select the constellation.
 
-- If the name is one of the items in the `search:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object](./templates/_objects.ssc) template is used to select the object. Feel free to add more objects to the list.
+- If the name is one of the items in the `search:objects` list in the [configuration file](conf.yaml) (for example "Mars" or "Callisto"), then the [object template](./templates/_objects.ssc) is used to select the object. Feel free to add more objects to the list.
 
 - If the name is one of the keys, other than "constellations" and "objects", in the `scripts` dictionary in the [configuration file](conf.yaml) (for example "zodiac2"), then the script with the same name in the [templates](./templates) folder will be executed without parameters. **If you add new scripts, choose the names so that they do not conflict with existing Stellarium scripts.**
 
@@ -150,6 +154,14 @@ My setup looks like this:
 
 ## Software and configuration
 
+### Installing the Desktop UI
+
+If you are coming from a headless Raspberry Pi, you will need to install the UI.
+
+```bash
+sudo apt-get install raspberrypi-ui-mods
+```
+
 ### Install Stellarium
 
 It can be installed either by `snap` or by compiling from source. I found that version `v24.4` against Qt 5 generally works better on this device, and built it from source.
@@ -198,20 +210,16 @@ The executable will be in `build_folder/src/stellarium`.
 
 </details>
 
+### Launching Stellarium
+
+See the [Stellarium service](./conf/systemd/stellarium.service).
+
 ### Installing `uv`
 
 See [uv docs](https://docs.astral.sh/uv/getting-started/installation/)
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-### Installing the Desktop UI
-
-If you are coming from a headless Raspberry Pi, you will need to install the UI.
-
-```bash
-sudo apt-get install raspberrypi-ui-mods
 ```
 
 ### Running as a service
