@@ -92,7 +92,7 @@ constellations = {
     "Triangulum": "Triangle",
     "Triangulum Australe": "Southern Triangle",
     "Tucana": "Toucan",
-    "Ursa Major": "Big Dipper",
+    "Ursa Major": "Big Dipper (Plough)",
     "Ursa Minor": "Little Dipper",
     "Vela": "Sails",
     "Virgo": "Virgin",
@@ -167,7 +167,6 @@ class Stellarium:
         self.client = httpx.AsyncClient()
         self.url = f"{url}:{port}/api"
         logger.setLevel(log_level)
-        self.scripts = {}
         self.scripts = {
             key: Script(**({"scripts_path": scripts_path} | values))
             for key, values in scripts.items()
@@ -224,6 +223,7 @@ class Stellarium:
     ):
         if script_type is ScriptType.STELLARIUM_SCRIPT:
             await self.run_script(param)
+            return
 
         if script_type is ScriptType.STANDALONE_SCRIPT:
             script = self.scripts.get(param, None)
@@ -236,6 +236,5 @@ class Stellarium:
             logger.warning("Script not found")
             return
 
-        if script_type != ScriptType.STELLARIUM_SCRIPT:
-            await script.replace_and_save(param)
+        await script.replace_and_save(param)
         await self.run_script(script.id)

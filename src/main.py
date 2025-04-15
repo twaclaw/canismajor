@@ -111,7 +111,9 @@ async def console_reader(queue: asyncio.Queue):
 
 async def main():
     parser = argparse.ArgumentParser(description="Stellarium API client")
-    parser.add_argument("--conf", type=str, help="YAML configuration file")
+    parser.add_argument(
+        "--conf", type=str, help="YAML configuration file", required=True
+    )
     parser.add_argument("--log-level", type=str, help="Log level", default="INFO")
     args = parser.parse_args()
 
@@ -130,18 +132,6 @@ async def main():
     if not scripts_path:
         raise RuntimeError("No Stellarium scripts path found in configuration")
 
-    client = Stellarium(
-        scripts_path,
-        conf["scripts"],
-        port=conf["stellarium"]["port"],
-    )
-
-    global validator
-    validator = NamesValidator(conf, scripts_path)
-
-    if not await client.test():
-        raise RuntimeError("Stellarium is not running")
-
     behavior = Behavior(conf["stellarium"]["behavior_previous_script"])
     timeout = conf["stellarium"]["timeout_previous_script"]
     valid_controls = {"console", "qrcode", "asr", "rfid"}
@@ -151,6 +141,18 @@ async def main():
         raise RuntimeError(
             "No valid controls found in configuration, at least one is required"
         )
+
+    client = Stellarium(
+        scripts_path,
+        conf["scripts"],
+        port=conf["stellarium"]["port"],
+    )
+
+    if not await client.test():
+        raise RuntimeError("Stellarium is not running")
+
+    global validator
+    validator = NamesValidator(conf, scripts_path)
 
     queue = asyncio.Queue()
 

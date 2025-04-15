@@ -31,7 +31,7 @@ class QRCodeReader:
 
     async def read(self, queue: asyncio.Queue):
         if not self.fd:
-            await asyncio.to_thread(self.open())
+            await asyncio.to_thread(self.open)
 
         try:
             while True:
