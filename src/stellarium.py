@@ -1,6 +1,8 @@
 import asyncio
 import logging
-from enum import Enum, auto
+import os
+from enum import Enum, StrEnum, auto
+from json.decoder import JSONDecodeError
 from typing import Any
 
 import aiofiles
@@ -101,9 +103,19 @@ constellations = {
 }
 
 
+class Behavior(StrEnum):
+    """
+    Defines what to do with a running script when a  new object arrives in the queue.
+    """
+
+    STOP = "stop"
+    IGNORE = "ignore"
+    WAIT = "wait"
+
+
 class ScriptType(Enum):
     """
-    - STELLARIUM_SCRIPT: Scripts included in the Stellarium distribution. Run as they are.
+    - STELLARIUM_SCRIPT: Scripts included in the Stellarium distribution. Run without modifications.
     - STANDALONE_SCRIPT: Custom script with no parameters
     - PARAMS_SCRIPT_CONSTELLATIONS: Custom script received a list of  constellations as input
     - PARAMS_SCRIPT_OBJECTS: Custom script received a list of objects as input
@@ -115,6 +127,48 @@ class ScriptType(Enum):
     PARAMS_SCRIPT_OBJECTS = auto()
 
 
+class NamesValidator:
+    """
+    Validates the objects names before passing them to Stellarium
+    and introspects the kind of script to run based on the object name.
+    """
+
+    def __init__(self, conf: dict[str, Any], stellarium_scripts_path: str):
+        self.language = conf["stellarium"]["constellations_language"]
+        if self.language not in ["english", "native"]:
+            raise RuntimeError(
+                "Invalid language for constellations, must be 'english' or 'native'"
+            )
+        self.objects = conf["search"]["objects"]
+        self.stellarium_scripts_path = stellarium_scripts_path
+        self.standalone_scripts = [
+            k for k in conf["scripts"].keys() if k not in ["constellation", "object"]
+        ]
+
+    def validate(self, obj) -> tuple[str, ScriptType] | None:
+        """
+        Introspects the kind of script to run based on the object name.
+        """
+        obj_title = obj.title()
+
+        if obj_title in self.objects:
+            return obj_title, ScriptType.PARAMS_SCRIPT_OBJECTS
+
+        if obj in self.standalone_scripts:
+            return obj, ScriptType.STANDALONE_SCRIPT
+
+        if obj_title in constellations:
+            return (
+                constellations[obj_title] if self.language == "english" else obj_title,
+                ScriptType.PARAMS_SCRIPT_CONSTELLATIONS,
+            )
+
+        if obj in os.listdir(self.stellarium_scripts_path):
+            return obj, ScriptType.STELLARIUM_SCRIPT
+
+        return None
+
+
 class Script:
     def __init__(self, scripts_path: str, script_name: str, args: dict[str, Any]):
         self.template = f"templates/{script_name}"
@@ -124,18 +178,15 @@ class Script:
         self.id = script_name
 
     async def ainit(self):
-        if self.template:
-            async with aiofiles.open(self.template, "r") as f:
-                self.script = await f.read()
+        if not self.template:
+            return
 
-            for arg in self.args:
-                value = self.args[arg]
-                if isinstance(value, bool):
-                    value = str(value).lower()
-                else:
-                    value = str(value)
+        async with aiofiles.open(self.template, "r") as f:
+            self.script = await f.read()
 
-                self.script = self.script.replace(arg, value)
+        for arg, value in self.args.items():
+            value = str(value).lower() if isinstance(value, bool) else str(value)
+            self.script = self.script.replace(arg, value)
 
     async def replace_and_save(self, name: list[str] | str):
         """
@@ -144,97 +195,138 @@ class Script:
         if not self.script:
             await self.ainit()
 
-        if self.template:
-            objects = name if isinstance(name, list) else [name]
-            objects_list = ", ".join(f'"{item}"' for item in objects)
-            modified_script = self.script.replace(
-                "_OBJECTS_LIST", f"new Array({objects_list})"
-            )
+        if not self.template:
+            return
 
-            async with aiofiles.open(self.script_path, "w") as f:
-                await f.write(modified_script)
+        objects = name if isinstance(name, list) else [name]
+        objects_list = ", ".join(f'"{item}"' for item in objects)
+        modified_script = self.script.replace(
+            "_OBJECTS_LIST", f"new Array({objects_list})"
+        )
+
+        async with aiofiles.open(self.script_path, "w") as f:
+            await f.write(modified_script)
 
 
 class Stellarium:
     def __init__(
         self,
-        scripts_path: str,
-        scripts: dict[str, dict[str, str]],
+        conf: dict[str, Any],
         url: str = "http://localhost",
-        port: int = 8090,
-        log_level: str = "INFO",
     ):
         self.client = httpx.AsyncClient()
+
+        port = conf["stellarium"]["port"]
         self.url = f"{url}:{port}/api"
-        logger.setLevel(log_level)
+
+        scripts_path: str | None = None
+        for p in conf["stellarium"]["script_paths"]:
+            if os.path.exists(p):
+                scripts_path = p
+                break
+
+        if not scripts_path:
+            raise RuntimeError("No Stellarium scripts path found in configuration")
+
+        scripts = conf["scripts"]
         self.scripts = {
             key: Script(**({"scripts_path": scripts_path} | values))
             for key, values in scripts.items()
         }
 
-    async def close(self):
+        self.validator = NamesValidator(conf, scripts_path)
+        self.behavior_previous_script = Behavior(
+            conf["stellarium"].get("behavior_previous_script", "wait")
+        )
+        self.timeout_previous_script = conf["stellarium"].get(
+            "timeout_previous_script", 60.0
+        )
+
+    async def _close(self):
         await self.client.aclose()
 
-    async def get(self, endpoint: str):
+    async def _get(self, endpoint: str):
         try:
             response = await self.client.get(f"{self.url}/{endpoint}")
             return response.json()
         except httpx.RequestError:
             logger.debug(f"Failed to fetch data from {self.url}/{endpoint}")
             return None
-        except Exception:
+        except JSONDecodeError:
             return response.text
 
-    async def post(self, endpoint: str, data: dict | None = None):
+    async def _post(self, endpoint: str, data: dict | None = None):
         try:
             response = await self.client.post(f"{self.url}/{endpoint}", data=data)
             return response.json()
         except httpx.RequestError:
             logger.debug(f"Failed to post data to {self.url}/{endpoint}")
             return None
-        except Exception:  # JSONDecoderError:
+        except JSONDecodeError:
             return response.text
 
-    async def test(self):
-        try:
-            return await self.get("main/status") is not None
-        except Exception:
-            return False
+    async def _run_script(self, script_id: str):
+        await self._post("scripts/run", {"id": script_id})
 
-    async def get_status(self):
-        return await self.get("main/status")
-
-    async def run_script(self, script_id: str):
-        await self.post("scripts/run", {"id": script_id})
-
-    async def is_script_running(self):
-        status = await self.get("scripts/status")
+    async def _is_script_running(self):
+        status = await self._get("scripts/status")
         return status["scriptIsRunning"]
 
-    async def wait_script_completion(self):
-        while await self.is_script_running():
+    async def _wait_script_completion(self):
+        while await self._is_script_running():
             await asyncio.sleep(1)
 
-    async def stop_script(self):
-        await self.post("scripts/stop")
+    async def _stop_script(self):
+        await self._post("scripts/stop")
 
-    async def focus(
+    async def _focus(
         self, param: str | None = None, script_type: ScriptType | None = None
     ):
         if script_type is ScriptType.STELLARIUM_SCRIPT:
-            await self.run_script(param)
+            await self._run_script(param)
             return
 
         if script_type is ScriptType.STANDALONE_SCRIPT:
-            script = self.scripts.get(param, None)
+            script = self.scripts.get(param)
         elif script_type is ScriptType.PARAMS_SCRIPT_OBJECTS:
-            script = self.scripts.get("object", None)
+            script = self.scripts.get("object")
         else:
-            script = self.scripts.get("constellation", None)
+            script = self.scripts.get("constellation")
 
         if not script:
             logger.warning("Script not found")
             return
 
         await script.replace_and_save(param)
-        await self.run_script(script.id)
+        await self._run_script(script.id)
+
+    async def test(self):
+        response = await self._get("main/status")
+        return response is not None
+
+    async def run_script_task(self, queue: asyncio.Queue):
+        while True:
+            obj = await queue.get()
+            logger.debug(f"Received object in queue: {obj}")
+            res = self.validator.validate(obj)
+            if not res:
+                logger.warning(f"Object '{obj}' not found in configuration.")
+                queue.task_done()
+                continue
+
+            obj, typ = res
+            logger.debug(f"Object '{obj}' found in configuration. Type: {typ}")
+            if self.behavior_previous_script == Behavior.STOP:
+                await self._stop_script()
+            elif self.behavior_previous_script == Behavior.WAIT:
+                try:
+                    await asyncio.wait_for(
+                        self._wait_script_completion(),
+                        timeout=self.timeout_previous_script,
+                    )
+                except asyncio.TimeoutError:
+                    await self._stop_script()
+
+            if not await self._is_script_running():
+                await self._focus(obj, typ)
+            queue.task_done()

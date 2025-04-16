@@ -13,21 +13,18 @@ class QRCodeReader:
         self.buffer_size = buffer_size
         self.fd = None
         self.buffer: str = []
+        self._char_map = {
+            **{i: chr(ord("a") + i - 0x04) for i in range(0x04, 0x1E)},  # a-z
+            **{i: chr(ord("2") + i - 0x1F) for i in range(0x1E, 0x28)},  # numbers
+            self.special_chars["space"]: " ",
+            self.special_chars["enter"]: "\n",
+        }
 
     def open(self):
         self.fd = open(self.device, "rb", buffering=0)
 
     def decode_char(self, char: int) -> str | None:
-        if char >= 0x04 and char <= 0x1D:
-            return chr(ord("a") + char - 0x04)
-        elif char >= 0x1E and char <= 0x27:
-            return chr(ord("2") + char - 0x1F)
-        elif char == self.special_chars["space"]:
-            return " "
-        elif char == self.special_chars["enter"]:
-            return "\n"
-        # TODO: Add more character mappings as needed, e.g., _, -, /
-        return {}.get(char, None)
+        return self._char_map.get(char)
 
     async def read(self, queue: asyncio.Queue):
         if not self.fd:
@@ -36,21 +33,25 @@ class QRCodeReader:
         try:
             while True:
                 data = await asyncio.to_thread(self.fd.read, self.buffer_size)
-                if data:
-                    control = data[0]
-                    char_byte = data[2]
-                    char = self.decode_char(char_byte)
-                    if not char:
-                        await asyncio.sleep(0.1)
-                        continue
-                    if control == self.special_chars["shift"]:
-                        self.buffer.append(char.upper())
-                    elif char == "\n":
-                        await queue.put("".join(self.buffer))
-                        self.buffer.clear()
-                        await asyncio.sleep(1.0)
-                    else:
-                        self.buffer.append(char)
+                if not data or len(data) < 3:
+                    await asyncio.sleep(0.1)
+                    continue
+
+                control, char_byte = data[0], data[2]
+                char = self.decode_char(char_byte)
+
+                if not char:
+                    await asyncio.sleep(0.1)
+                    continue
+
+                if control == self.special_chars["shift"]:
+                    self.buffer.append(char.upper())
+                elif char == "\n":
+                    await queue.put("".join(self.buffer))
+                    self.buffer.clear()
+                    await asyncio.sleep(1.0)
+                else:
+                    self.buffer.append(char)
 
                 await asyncio.sleep(0.1)
         except Exception as ex:
