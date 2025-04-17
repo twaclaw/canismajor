@@ -6,13 +6,14 @@ var objects = _OBJECTS_LIST;
 var delay1 = _DELAY1;
 var delay2 = _DELAY2;
 var final_fov = _FINAL_FOV;
+var atmosphere = _ATMOSPHERE;
 
 
 core.setGuiVisible(false);
 core.setDate("now");
 LandscapeMgr.setFlagCardinalPoints(false);
 LandscapeMgr.setFlagLandscape(false);
-LandscapeMgr.setFlagAtmosphere(false);
+LandscapeMgr.setFlagAtmosphere(atmosphere);
 SolarSystem.setFlagLabels(false);
 StarMgr.setFlagLabels(false);
 
@@ -21,23 +22,14 @@ ConstellationMgr.setFlagBoundaries(false);
 ConstellationMgr.setFlagLines(false);
 ConstellationMgr.setFlagLabels(false);
 
+
 for (i=0; i < objects.length; i++)
 {
 	objName = objects[i];
 	core.selectObjectByName(objName, false);
 	core.wait(delay1);
 	StelMovementMgr.autoZoomIn(6);
-	core.wait(2*delay2);
-	StelMovementMgr.autoZoomOut(6);
-
-	//GridLinesMgr.setFlagEclipticLine(true);
-	ConstellationMgr.setFlagArt(true);
 	core.wait(delay2);
-	//GridLinesMgr.setFlagEclipticLine(false);
-	ConstellationMgr.setFlagArt(false);
-	//ConstellationMgr.setFlagLines(false);
-	StelMovementMgr.autoZoomIn(6);
-
 }
 
-StelMovementMgr.zoomTo(final_fov,8);
+StelMovementMgr.zoomTo(final_fov, 8);

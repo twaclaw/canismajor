@@ -8,7 +8,7 @@ stellarium:
   # - stop: stop the previous script
   # - wait: wait for the previous script to finish
   # - ignore: ignore the new script
-  behavior_previous_script: wait
+  behavior_previous_script: stop
   timeout_previous_script: 120
   templates_path: ./templates
 
@@ -46,7 +46,7 @@ scripts:
     args:
       _DELAY1: 5
       _DELAY2: 10
-      _FINAL_FOV: 300
+      _FINAL_FOV: 80
       _ATMOSPHERE: false
 
   # ------------------------------------------

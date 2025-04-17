@@ -52,11 +52,6 @@ async def main():
             "No valid controls found in configuration, at least one is required"
         )
 
-    client = Stellarium(conf)
-
-    if not await client.test():
-        raise RuntimeError("Stellarium is not running")
-
     queue = asyncio.Queue()
 
     tasks = []
@@ -82,6 +77,10 @@ async def main():
         raise RuntimeError(
             "Any of the controls in the configuration could be initialized, at least one is required"
         )
+
+    client = Stellarium(conf)
+    if not await client.test():
+        raise RuntimeError("Stellarium is not running")
 
     tasks.append(asyncio.create_task(client.run_script_task(queue)))
 
