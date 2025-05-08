@@ -51,10 +51,10 @@ constellations = {
     "Fornax": "Furnace",
     "Gemini": "Twins",
     "Grus": "Crane",
-    "Hercules": "Strongman",
+    "Hercules": "Hercules",
     "Horologium": "Clock",
-    "Hydra": "Sea Serpent",
-    "Hydrus": "Lesser Water Snake",
+    "Hydra": "Sea Monster",
+    "Hydrus": "Female Water Snake",
     "Indus": "Indian",
     "Lacerta": "Lizard",
     "Leo": "Lion",
@@ -99,7 +99,7 @@ constellations = {
     "Vela": "Sails",
     "Virgo": "Virgin",
     "Volans": "Flying Fish",
-    "Vulpecula": "Little Fox",
+    "Vulpecula": "Fox",
 }
 
 
