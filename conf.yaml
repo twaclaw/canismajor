@@ -2,6 +2,7 @@ stellarium:
   port: 8090
   initial_fov: 60
   constellations_language: english
+  playsound: true
 
   # Behavior when a script is already running
   # behavior_previous_script:

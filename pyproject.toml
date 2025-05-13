@@ -2,7 +2,7 @@
 license = "MIT"
 name = "canismajor"
 version = "0.1.0"
-description = "Add your description here"
+description = "A sky projection based on Stellarium for very curious and inquisitive children"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -14,9 +14,5 @@ dependencies = [
 
 [project.optional-dependencies]
 rpi = ["systemd >= 0.17.1"]
-dev = [
-    "qrcode>=8.1",
-    "ruff>=0.11.5",
-    "pre-commit>=4.2.0",
-]
+dev = ["qrcode>=8.1", "ruff>=0.11.5", "pre-commit>=4.2.0", "gtts>=2.5.4", "tqdm>=4.67.1"]
 sra = ["speechrecognition>=3.14.1", "sounddevice>=0.5.1", "jellyfish>=1.1.3"]

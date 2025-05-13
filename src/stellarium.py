@@ -7,6 +7,7 @@ from typing import Any
 
 import aiofiles
 import httpx
+import pygame
 
 logger = logging.getLogger("canismajor")
 
@@ -148,7 +149,12 @@ class NamesValidator:
     def validate(self, obj) -> tuple[str, ScriptType] | None:
         """
         Introspects the kind of script to run based on the object name.
+
+        Returns:
+        - Object name: str
+        - Script type: ScriptType
         """
+
         obj_title = obj.title()
 
         if obj_title in self.objects:
@@ -242,6 +248,17 @@ class Stellarium:
             "timeout_previous_script", 60.0
         )
 
+        self.playsound = False
+        if conf["stellarium"].get("playsound", False):
+            pygame.mixer.init()
+            pygame.mixer.set_num_channels(1)
+            language = conf["stellarium"]["constellations_language"]
+            self.audiofiles = {
+                constellations[k] if language == "english" else k: f"audio/{k}.mp3"
+                for k in constellations
+            }
+            self.playsound = True
+
     async def _close(self):
         await self.client.aclose()
 
@@ -279,6 +296,10 @@ class Stellarium:
     async def _stop_script(self):
         await self._post("scripts/stop")
 
+    def playaudio(self, sound: str):
+        pygame.mixer.music.load(self.audiofiles[sound])
+        pygame.mixer.music.play()
+
     async def _focus(
         self, param: str | None = None, script_type: ScriptType | None = None
     ):
@@ -291,6 +312,8 @@ class Stellarium:
         elif script_type is ScriptType.PARAMS_SCRIPT_OBJECTS:
             script = self.scripts.get("object")
         else:
+            if self.playsound:
+                await asyncio.to_thread(self.playaudio, param)
             script = self.scripts.get("constellation")
 
         if not script:
