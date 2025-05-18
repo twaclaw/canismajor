@@ -11,12 +11,11 @@
 var constellations = new Array("Twins", "Crab", "Lion", "Maiden", "Scales", "Scorpion", "Serpent Bearer", "Archer", "Sea Goat", "Water Bearer", "Fishes", "Ram", "Bull");
 //var constellations = new Array("Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpius", "Ophiuchus", "Sagittarius", "Capricornus", "Aquarius", "Pisces", "Aries", "Taurus");
 
-var delay1 = _DELAY1;
+var delay1 = _DELAY_BETWEEN_CONSTELLATIONS;
 var delay2 = _DELAY2;
 
 core.setSkyCulture("modern");
 core.clear("deepspace");
-core.wait(1);
 
 ConstellationMgr.setConstellationDisplayStyle(1);
 
@@ -28,7 +27,6 @@ LandscapeMgr.setFlagAtmosphere(false);
 core.setDate("2006:03:14T21:21:32");
 core.moveToRaDec("17h 53m 0s", "66d 25m 0s");
 StelMovementMgr.zoomTo(210, 5);
-core.wait(delay1);
 
 ConstellationMgr.setArtIntensity(0.6);
 SolarSystem.setFlagLabels(false);

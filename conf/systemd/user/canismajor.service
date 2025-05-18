@@ -7,7 +7,7 @@ After=stellarium.service
 [Service]
 Environment=PYTHONUNBUFFERED=1
 WorkingDirectory=/home/pi/canismajor
-ExecStart=/home/pi/canismajor/venv/bin/python -m main --conf /home/pi/canismajor/conf.yaml
+ExecStart=/home/pi/canismajor/venv/bin/python -m main --conf conf.yaml
 Restart=always
 RestartSec=10s
 

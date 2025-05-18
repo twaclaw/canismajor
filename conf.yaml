@@ -55,7 +55,7 @@ scripts:
   zodiac2:
     script_name: zodiac2.ssc
     args:
-      _DELAY1: 1
+      _DELAY_BETWEEN_CONSTELLATIONS: 2
       _DELAY2: 5
       _FINAL_FOV: 300
       _ATMOSPHERE: false
