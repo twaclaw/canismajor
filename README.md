@@ -113,7 +113,7 @@ python -m main --conf conf.yaml
 
 - The list `controls` in the [configuration file](conf.yaml) should contain `console`.
 
-The fact that the particular QR code reader I used is recognized as a keyboard is both good and bad. It is good because it is easy to test the QR reading functionality with no code and virtually no configuration. When the focus (mouse over) is on the console (terminal) where the application is running, the QR code readings are passed to the application as if they were typed on the keyboard.
+The fact that the particular QR code reader I used is recognized as a keyboard is both good and bad. It is good because it is easy to test the QR reading functionality with no code and virtually no configuration. When the focus (mouse over) is on the console (terminal) where the application is running, the QR code readings are passed to the application as if they were typed on the keyboard (make sure that the keyboard is set to the US layout or a similar one that does not transpose the keys).
 
 The reason why this is bad applies mainly to the Raspberry Pi. On the one hand, the HID device is read directly by the application, all good so far, but because the device is also recognized as a keyboard and the focus is on the Stellarium software, the QR code readings are interpreted as shortcuts and Stellarium ends up doing funny things.
 
