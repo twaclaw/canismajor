@@ -8,8 +8,9 @@
 //              of a year.
 //
 
-var constellations = new Array("Twins", "Crab", "Lion", "Maiden", "Scales", "Scorpion", "Serpent Bearer", "Archer", "Sea Goat", "Water Bearer", "Fishes", "Ram", "Bull");
+//var constellations = new Array("Twins", "Crab", "Lion", "Maiden", "Scales", "Scorpion", "Serpent Bearer", "Archer", "Sea Goat", "Water Bearer", "Fishes", "Ram", "Bull");
 //var constellations = new Array("Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpius", "Ophiuchus", "Sagittarius", "Capricornus", "Aquarius", "Pisces", "Aries", "Taurus");
+var constellations = _OBJECTS_LIST;
 
 var delay1 = _DELAY_BETWEEN_CONSTELLATIONS;
 var delay2 = _DELAY2;

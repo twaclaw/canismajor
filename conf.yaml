@@ -45,8 +45,8 @@ scripts:
   object: # don't change this name
     script_name: _objects.ssc
     args:
-      _DELAY1: 5
-      _DELAY2: 10
+      _DELAY1: 10
+      _DELAY2: 15
       _FINAL_FOV: 80
       _ATMOSPHERE: false
 
@@ -59,6 +59,20 @@ scripts:
       _DELAY2: 5
       _FINAL_FOV: 300
       _ATMOSPHERE: false
+
+  perseus2:
+    script_name: perseus2.ssc
+    args:
+      _DELAY_BETWEEN_CONSTELLATIONS: 2
+      _DELAY_STARS_ONLY: 4
+      _FINAL_FOV: 120
+      _ATMOSPHERE: false
+      _OBJECTS_LIST:
+        - "Andromeda"
+        - "Cassiopeia"
+        - "Cepheus"
+        - "Cetus"
+        - "Perseus"
 
 search:
   objects:

@@ -81,8 +81,8 @@ constellations = {
     "Pisces": "Fishes",
     "Piscis Austrinus": "Southern Fish",
     "Puppis": "Stern",
-    "Pyxis": "Compass Box",
-    "Reticulum": "Net",
+    "Pyxis": "Mariner Compass",
+    "Reticulum": "Reticle",
     "Sagitta": "Arrow",
     "Sagittarius": "Archer",
     "Scorpius": "Scorpion",
@@ -191,10 +191,15 @@ class Script:
             self.script = await f.read()
 
         for arg, value in self.args.items():
+            if isinstance(value, list):
+                value = ", ".join(
+                    f'"{constellations.get(item, item)}"' for item in value
+                )
+                value = f"new Array({value})"
             value = str(value).lower() if isinstance(value, bool) else str(value)
             self.script = self.script.replace(arg, value)
 
-    async def replace_and_save(self, name: list[str] | str):
+    async def replace_and_save(self, objects: list[str] | str):
         """
         Modifies the template and stores it in the script path.
         """
@@ -204,7 +209,6 @@ class Script:
         if not self.template:
             return
 
-        objects = name if isinstance(name, list) else [name]
         objects_list = ", ".join(f'"{item}"' for item in objects)
         modified_script = self.script.replace(
             "_OBJECTS_LIST", f"new Array({objects_list})"
@@ -224,6 +228,7 @@ class Stellarium:
         self.conf = conf
         port = conf["stellarium"]["port"]
         self.url = f"{url}:{port}/api"
+        self.language = conf["stellarium"]["constellations_language"]
 
         scripts_path: str | None = None
         for p in conf["stellarium"]["script_paths"]:
@@ -249,34 +254,33 @@ class Stellarium:
         )
 
         self.playsound = False
+        self.zodiac = [
+            "Gemini",
+            "Cancer",
+            "Leo",
+            "Virgo",
+            "Libra",
+            "Scorpius",
+            "Ophiuchus",
+            "Sagittarius",
+            "Capricornus",
+            "Aquarius",
+            "Pisces",
+            "Aries",
+            "Taurus",
+        ]
         if conf["stellarium"].get("playsound", False):
             self.playsound = True
             try:
                 pygame.mixer.init()
                 pygame.mixer.set_num_channels(1)
-                language = conf["stellarium"]["constellations_language"]
                 self.audiofiles = {
-                    constellations[k] if language == "english" else k: f"audio/{k}.mp3"
+                    constellations[k]
+                    if self.language == "english"
+                    else k: f"audio/{k}.mp3"
                     for k in constellations
                 }
-                self.audiofiles["zodiac2"] = [
-                    f"audio/{k}.mp3"
-                    for k in (
-                        "Gemini",
-                        "Cancer",
-                        "Leo",
-                        "Virgo",
-                        "Libra",
-                        "Scorpius",
-                        "Ophiuchus",
-                        "Sagittarius",
-                        "Capricornus",
-                        "Aquarius",
-                        "Pisces",
-                        "Aries",
-                        "Taurus",
-                    )
-                ]
+                self.audiofiles["zodiac2"] = [f"audio/{k}.mp3" for k in self.zodiac]
             except Exception:
                 self.playsound = False
 
@@ -321,8 +325,8 @@ class Stellarium:
         pygame.mixer.music.load(mp3_path)
         pygame.mixer.music.play()
 
-    async def _playaudio(self, sound: str, delay: float = 1.0):
-        audio = self.audiofiles[sound]
+    async def _playaudio(self, sound: str | list[str], delay: float = 1.0):
+        audio = self.audiofiles[sound] if isinstance(sound, str) else [self.audiofiles[s] for s in sound]
         if isinstance(audio, list):
             for sound in audio:
                 await asyncio.sleep(delay)
@@ -339,13 +343,23 @@ class Stellarium:
 
         tasks = []
         if script_type is ScriptType.STANDALONE_SCRIPT:
+            script = self.scripts.get(param)
             if param == "zodiac2":
                 # Try to synchronize the audio with the Stellarium script
                 delay = self.conf["scripts"]["zodiac2"]["args"].get(
                     "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
                 )
                 tasks.append(self._playaudio("zodiac2", delay))
-            script = self.scripts.get(param)
+                param = self.zodiac
+            elif param == "perseus2":
+                delay = self.conf["scripts"]["zodiac2"]["args"].get(
+                    "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
+                )
+                consts = self.conf["scripts"]["perseus2"]["args"].get(
+                    "_OBJECTS_LIST", [])
+                if consts:
+                    tasks.append(self._playaudio(consts, delay))
+
         elif script_type is ScriptType.PARAMS_SCRIPT_OBJECTS:
             script = self.scripts.get("object")
         else:
@@ -357,6 +371,12 @@ class Stellarium:
             logger.warning("Script not found")
             return
 
+        if self.language == "english":
+            param = (
+                [constellations.get(obj, obj) for obj in param]
+                if isinstance(param, list)
+                else [constellations.get(param, param)]
+            )
         await script.replace_and_save(param)
 
         tasks.append(self._run_script(script.id))

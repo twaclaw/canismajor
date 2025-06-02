@@ -1,0 +1,52 @@
+var constellations = _OBJECTS_LIST;
+
+var delay1 = _DELAY_BETWEEN_CONSTELLATIONS;
+var final_fov = _FINAL_FOV;
+var delay_stars_only = _DELAY_STARS_ONLY;
+
+core.setSkyCulture("modern");
+core.clear("deepspace");
+
+ConstellationMgr.setConstellationDisplayStyle(1);
+
+ConstellationMgr.setFlagLabels(false);
+ConstellationMgr.setFlagArt(false);
+ConstellationMgr.deselectConstellations();
+
+LandscapeMgr.setFlagAtmosphere(false);
+
+ConstellationMgr.setArtIntensity(0.6);
+SolarSystem.setFlagLabels(false);
+
+
+ConstellationMgr.setFlagIsolateSelected(true);
+//ConstellationMgr.setFlagLabels(true);
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(false);
+
+
+core.selectObjectByName(constellations[0]);
+StelMovementMgr.autoZoomIn(6);
+StelMovementMgr.zoomTo(120,1);
+core.wait(delay1);
+
+for(i=1; i<constellations.length; i++)
+{
+	core.selectObjectByName(constellations[i]);
+	core.wait(delay1);
+}
+
+core.wait(delay_stars_only);
+
+
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagArt(true);
+for(i=0; i<constellations.length; i++)
+{
+	core.selectObjectByName(constellations[i]);
+	core.wait(delay1);
+}
+
+ConstellationMgr.setFlagLabels(false);
+SolarSystem.setFlagLabels(true);
+StelMovementMgr.zoomTo(final_fov,8);
