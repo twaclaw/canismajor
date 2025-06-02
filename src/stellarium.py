@@ -229,6 +229,7 @@ class Stellarium:
         port = conf["stellarium"]["port"]
         self.url = f"{url}:{port}/api"
         self.language = conf["stellarium"]["constellations_language"]
+        self.const_english = {constellations[k]: k for k in constellations}
 
         scripts_path: str | None = None
         for p in conf["stellarium"]["script_paths"]:
@@ -274,12 +275,7 @@ class Stellarium:
             try:
                 pygame.mixer.init()
                 pygame.mixer.set_num_channels(1)
-                self.audiofiles = {
-                    constellations[k]
-                    if self.language == "english"
-                    else k: f"audio/{k}.mp3"
-                    for k in constellations
-                }
+                self.audiofiles = {k: f"audio/{k}.mp3" for k in constellations}
                 self.audiofiles["zodiac2"] = [f"audio/{k}.mp3" for k in self.zodiac]
             except Exception:
                 self.playsound = False
@@ -326,11 +322,15 @@ class Stellarium:
         pygame.mixer.music.play()
 
     async def _playaudio(self, sound: str | list[str], delay: float = 1.0):
-        audio = self.audiofiles[sound] if isinstance(sound, str) else [self.audiofiles[s] for s in sound]
+        audio = (
+            self.audiofiles[self.const_english.get(sound, sound)]
+            if isinstance(sound, str)
+            else [self.audiofiles[self.const_english.get(s, s)] for s in sound]
+        )
         if isinstance(audio, list):
             for sound in audio:
-                await asyncio.sleep(delay)
                 await asyncio.to_thread(self._playmp3, sound)
+                await asyncio.sleep(delay)
         else:
             await asyncio.to_thread(self._playmp3, audio)
 
@@ -356,7 +356,8 @@ class Stellarium:
                     "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
                 )
                 consts = self.conf["scripts"]["perseus2"]["args"].get(
-                    "_OBJECTS_LIST", [])
+                    "_OBJECTS_LIST", []
+                )
                 if consts:
                     tasks.append(self._playaudio(consts, delay))
 
