@@ -1,6 +1,7 @@
 var constellations = _OBJECTS_LIST;
 
 var delay1 = _DELAY_BETWEEN_CONSTELLATIONS;
+var initial_fov = _INITIAL_FOV;
 var final_fov = _FINAL_FOV;
 var delay_stars_only = _DELAY_STARS_ONLY;
 
@@ -15,19 +16,19 @@ ConstellationMgr.deselectConstellations();
 
 LandscapeMgr.setFlagAtmosphere(false);
 
-ConstellationMgr.setArtIntensity(0.6);
+ConstellationMgr.setArtIntensity(0.3);
 SolarSystem.setFlagLabels(false);
 
 
 ConstellationMgr.setFlagIsolateSelected(true);
 //ConstellationMgr.setFlagLabels(true);
 ConstellationMgr.setFlagLines(true);
-ConstellationMgr.setFlagArt(false);
+ConstellationMgr.setFlagArt(true);
 
 
 core.selectObjectByName(constellations[0]);
 StelMovementMgr.autoZoomIn(6);
-StelMovementMgr.zoomTo(120,1);
+StelMovementMgr.zoomTo(initial_fov,1);
 core.wait(delay1);
 
 for(i=1; i<constellations.length; i++)
@@ -37,15 +38,8 @@ for(i=1; i<constellations.length; i++)
 }
 
 core.wait(delay_stars_only);
+ConstellationMgr.setArtIntensity(0.7);
 
-
-ConstellationMgr.deselectConstellations();
-ConstellationMgr.setFlagArt(true);
-for(i=0; i<constellations.length; i++)
-{
-	core.selectObjectByName(constellations[i]);
-	core.wait(delay1);
-}
 
 ConstellationMgr.setFlagLabels(false);
 SolarSystem.setFlagLabels(true);

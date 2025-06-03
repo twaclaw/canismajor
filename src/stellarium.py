@@ -130,7 +130,7 @@ class ScriptType(Enum):
 
 class NamesValidator:
     """
-    Validates the objects names before passing them to Stellarium
+    Validates the objects names before passing them to Stellarium,
     and introspects the kind of script to run based on the object name.
     """
 
@@ -185,7 +185,7 @@ class Script:
 
     async def ainit(self):
         if not self.template:
-            return
+            raise RuntimeError("Template path is not set. Cannot initialize script.")
 
         async with aiofiles.open(self.template, "r") as f:
             self.script = await f.read()
@@ -196,18 +196,16 @@ class Script:
                     f'"{constellations.get(item, item)}"' for item in value
                 )
                 value = f"new Array({value})"
-            value = str(value).lower() if isinstance(value, bool) else str(value)
+            else:
+                value = str(value).lower() if isinstance(value, bool) else str(value)
             self.script = self.script.replace(arg, value)
 
-    async def replace_and_save(self, objects: list[str] | str):
+    async def replace_and_save(self, objects: list[str]):
         """
         Modifies the template and stores it in the script path.
         """
         if not self.script:
             await self.ainit()
-
-        if not self.template:
-            return
 
         objects_list = ", ".join(f'"{item}"' for item in objects)
         modified_script = self.script.replace(
@@ -254,7 +252,7 @@ class Stellarium:
             "timeout_previous_script", 60.0
         )
 
-        self.playsound = False
+        self.playsound = conf["stellarium"].get("playsound", False)
         self.zodiac = [
             "Gemini",
             "Cancer",
@@ -270,8 +268,8 @@ class Stellarium:
             "Aries",
             "Taurus",
         ]
-        if conf["stellarium"].get("playsound", False):
-            self.playsound = True
+
+        if self.playsound:
             try:
                 pygame.mixer.init()
                 pygame.mixer.set_num_channels(1)
@@ -321,22 +319,22 @@ class Stellarium:
         pygame.mixer.music.load(mp3_path)
         pygame.mixer.music.play()
 
-    async def _playaudio(self, sound: str | list[str], delay: float = 1.0):
-        audio = (
-            self.audiofiles[self.const_english.get(sound, sound)]
-            if isinstance(sound, str)
-            else [self.audiofiles[self.const_english.get(s, s)] for s in sound]
-        )
-        if isinstance(audio, list):
-            for sound in audio:
-                await asyncio.to_thread(self._playmp3, sound)
-                await asyncio.sleep(delay)
-        else:
-            await asyncio.to_thread(self._playmp3, audio)
+    async def _playaudio(self, sound: list[str], delay: float = 1.0):
+        audio_files = [
+            self.audiofiles.get(self.const_english.get(s, s), None) for s in sound
+        ]
+        audio_files = list(filter(None, audio_files))
+        for sound in audio_files:
+            await asyncio.to_thread(self._playmp3, sound)
+            await asyncio.sleep(delay)
 
     async def _focus(
         self, param: str | None = None, script_type: ScriptType | None = None
     ):
+        """
+        Focuses Stellarium on the given object. This is achieved by running a script
+        depending on the type of object (e.g., constellation, planet, etc).
+        """
         if script_type is ScriptType.STELLARIUM_SCRIPT:
             await self._run_script(param)
             return
@@ -351,21 +349,21 @@ class Stellarium:
                 )
                 tasks.append(self._playaudio("zodiac2", delay))
                 param = self.zodiac
-            elif param == "perseus2":
-                delay = self.conf["scripts"]["zodiac2"]["args"].get(
-                    "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
-                )
-                consts = self.conf["scripts"]["perseus2"]["args"].get(
+            else:
+                consts = self.conf["scripts"][param]["args"].get(
                     "_OBJECTS_LIST", []
                 )
                 if consts:
+                    delay = self.conf["scripts"][param]["args"].get(
+                        "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
+                    )
                     tasks.append(self._playaudio(consts, delay))
 
         elif script_type is ScriptType.PARAMS_SCRIPT_OBJECTS:
             script = self.scripts.get("object")
         else:
             if self.playsound:
-                tasks.append(self._playaudio(param))
+                tasks.append(self._playaudio([param]))
             script = self.scripts.get("constellation")
 
         if not script:

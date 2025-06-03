@@ -61,11 +61,12 @@ scripts:
       _ATMOSPHERE: false
 
   perseus2:
-    script_name: perseus2.ssc
+    script_name: story.ssc
     args:
       _DELAY_BETWEEN_CONSTELLATIONS: 2
-      _DELAY_STARS_ONLY: 4
-      _FINAL_FOV: 120
+      _DELAY_STARS_ONLY: 3
+      _INITIAL_FOV: 120
+      _FINAL_FOV: 100
       _ATMOSPHERE: false
       _OBJECTS_LIST:
         - "Andromeda"
@@ -73,6 +74,19 @@ scripts:
         - "Cepheus"
         - "Cetus"
         - "Perseus"
+
+  argo:
+    script_name: story.ssc
+    args:
+      _DELAY_BETWEEN_CONSTELLATIONS: 2
+      _DELAY_STARS_ONLY: 3
+      _INITIAL_FOV: 80
+      _FINAL_FOV: 100
+      _ATMOSPHERE: false
+      _OBJECTS_LIST:
+        - "Puppis"
+        - "Carina"
+        - "Vela"
 
 search:
   objects:
