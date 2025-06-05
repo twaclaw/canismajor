@@ -7,29 +7,57 @@ var delay1 = _DELAY1;
 var delay2 = _DELAY2;
 var final_fov = _FINAL_FOV;
 var atmosphere = _ATMOSPHERE;
+var initial_fov = _INITIAL_FOV;
+
 
 
 core.setGuiVisible(false);
-core.setDate("now");
 LandscapeMgr.setFlagCardinalPoints(false);
 LandscapeMgr.setFlagLandscape(false);
 LandscapeMgr.setFlagAtmosphere(atmosphere);
 SolarSystem.setFlagLabels(false);
 StarMgr.setFlagLabels(false);
 
+core.setDate("now");
+GridLinesMgr.setFlagEclipticLine(false);
+
 ConstellationMgr.setFlagArt(false);
 ConstellationMgr.setFlagBoundaries(false);
 ConstellationMgr.setFlagLines(false);
 ConstellationMgr.setFlagLabels(false);
+ConstellationMgr.setConstellationDisplayStyle(1);
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagIsolateSelected(true);
+ConstellationMgr.setFlagArt(true);
+
+var loc = core.getObserverLocationInfo();
+
+StelMovementMgr.zoomTo(initial_fov, 3);
 
 
 for (i=0; i < objects.length; i++)
 {
 	objName = objects[i];
-	core.selectObjectByName(objName, false);
-	core.wait(delay1);
-	StelMovementMgr.autoZoomIn(6);
-	core.wait(delay2);
+	if (objName == "Earth")
+ 	{
+		core.setObserverLocation(loc["longitude"], loc["latitude"], loc["altitude"], 10, "", "Sun");
+ 	}
+	core.selectObjectByName(objName, true);
 }
 
+core.wait(delay2);
+for (i=0; i < objects.length; i++)
+{
+ objName = objects[i];
+ core.selectObjectByName(objName, false);
+ StelMovementMgr.autoZoomIn(6);
+}
+
+SolarSystem.setFlagLabels(true);
+
+core.wait(6 + delay1);
+
+core.setObserverLocation(loc["longitude"], loc["latitude"], loc["altitude"], 10, "", "Earth");
+
+SolarSystem.setFlagLabels(false);
 StelMovementMgr.zoomTo(final_fov, 8);

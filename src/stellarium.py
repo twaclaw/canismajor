@@ -273,8 +273,9 @@ class Stellarium:
             try:
                 pygame.mixer.init()
                 pygame.mixer.set_num_channels(1)
-                self.audiofiles = {k: f"audio/{k}.mp3" for k in constellations}
-                self.audiofiles["zodiac2"] = [f"audio/{k}.mp3" for k in self.zodiac]
+                self.audiofiles = {k: f"audio/{k}.mp3" for k in constellations} | {
+                    k: f"audio/{k}.mp3" for k in self.conf["search"]["objects"]
+                }
             except Exception:
                 self.playsound = False
 
@@ -347,12 +348,10 @@ class Stellarium:
                 delay = self.conf["scripts"]["zodiac2"]["args"].get(
                     "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
                 )
-                tasks.append(self._playaudio("zodiac2", delay))
+                tasks.append(self._playaudio(self.zodiac, delay))
                 param = self.zodiac
             else:
-                consts = self.conf["scripts"][param]["args"].get(
-                    "_OBJECTS_LIST", []
-                )
+                consts = self.conf["scripts"][param]["args"].get("_OBJECTS_LIST", [])
                 if consts:
                     delay = self.conf["scripts"][param]["args"].get(
                         "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
@@ -361,6 +360,8 @@ class Stellarium:
 
         elif script_type is ScriptType.PARAMS_SCRIPT_OBJECTS:
             script = self.scripts.get("object")
+            if self.playsound:
+                tasks.append(self._playaudio([param]))
         else:
             if self.playsound:
                 tasks.append(self._playaudio([param]))

@@ -45,9 +45,10 @@ scripts:
   object: # don't change this name
     script_name: _objects.ssc
     args:
-      _DELAY1: 10
-      _DELAY2: 15
-      _FINAL_FOV: 80
+      _DELAY1: 6
+      _DELAY2: 6
+      _INITIAL_FOV: 150
+      _FINAL_FOV: 150
       _ATMOSPHERE: false
 
   # ------------------------------------------
@@ -61,7 +62,7 @@ scripts:
       _ATMOSPHERE: false
 
   perseus2:
-    script_name: story.ssc
+    script_name: groups.ssc
     args:
       _DELAY_BETWEEN_CONSTELLATIONS: 2
       _DELAY_STARS_ONLY: 3
@@ -76,7 +77,7 @@ scripts:
         - "Perseus"
 
   argo:
-    script_name: story.ssc
+    script_name: groups.ssc
     args:
       _DELAY_BETWEEN_CONSTELLATIONS: 2
       _DELAY_STARS_ONLY: 3
@@ -88,14 +89,28 @@ scripts:
         - "Carina"
         - "Vela"
 
+  hunting:
+    script_name: groups.ssc
+    args:
+      _DELAY_BETWEEN_CONSTELLATIONS: 2
+      _DELAY_STARS_ONLY: 3
+      _INITIAL_FOV: 100
+      _FINAL_FOV: 120
+      _ATMOSPHERE: false
+      _OBJECTS_LIST:
+        - "Canis Major"
+        - "Canis Minor"
+        - "Orion"
+        - "Lepus"
+
 search:
   objects:
+    - Jupiter
     - Mercury
     - Venus
     - Earth
     - Moon
     - Mars
-    - Jupiter
     - Io
     - Europa
     - Ganymede
