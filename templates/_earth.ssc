@@ -1,0 +1,55 @@
+include("common_objects.inc");
+var constellations = _OBJECTS_LIST;
+
+var delay_between_constellations = _DELAY_BETWEEN_CONSTELLATIONS;
+var time_step = _TIME_STEP;
+var time_step_delay = _DELAY;
+var atmosphere = _ATMOSPHERE;
+var initial_fov = _INITIAL_FOV;
+var n_iter = _N_ITER;
+
+core.setGuiVisible(false);
+LandscapeMgr.setFlagCardinalPoints(false);
+LandscapeMgr.setFlagLandscape(false);
+LandscapeMgr.setFlagAtmosphere(atmosphere);
+StarMgr.setFlagLabels(false);
+
+
+core.setDate("now");
+//core.setDate("2006:03:14T21:21:32");
+core.moveToRaDec("17h 53m 0s", "88d 25m 0s");
+core.setSkyCulture("modern");
+StelMovementMgr.zoomTo(initial_fov, 1);
+
+ConstellationMgr.setConstellationDisplayStyle(1);
+
+ConstellationMgr.setFlagLabels(false);
+ConstellationMgr.setFlagArt(false);
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagBoundaries(false);
+
+SolarSystem.setFlagLabels(true);
+StarMgr.setFlagLabels(false);
+
+
+var loc = core.getObserverLocationInfo();
+core.setObserverLocation(0, 0, 0, 1, "", "Sun");
+
+
+ConstellationMgr.setFlagIsolateSelected(true);
+ConstellationMgr.setFlagArt(true);
+core.setMountMode("equatorial");
+
+for(i=0; i<constellations.length; i++)
+{
+	core.selectObjectByName(constellations[i]);
+	core.wait(delay_between_constellations);
+}
+
+
+for(i=0; i < n_iter; i++)
+{
+	core.setDate(time_step);
+	core.selectObjectByName("Earth", true);
+	core.wait(time_step_delay);
+}

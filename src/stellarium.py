@@ -350,6 +350,8 @@ class Stellarium:
                 )
                 tasks.append(self._playaudio(self.zodiac, delay))
                 param = self.zodiac
+            elif param == "earth2":
+                param = self.zodiac
             else:
                 consts = self.conf["scripts"][param]["args"].get("_OBJECTS_LIST", [])
                 if consts:

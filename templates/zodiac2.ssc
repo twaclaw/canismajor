@@ -47,5 +47,5 @@ ConstellationMgr.setFlagBoundaries(true);
 
 ConstellationMgr.setFlagLabels(false);
 SolarSystem.setFlagLabels(true);
-core.delay(delay2);
+core.wait(delay2);
 GridLinesMgr.setFlagEclipticLine(false);

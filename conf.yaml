@@ -61,6 +61,18 @@ scripts:
       _FINAL_FOV: 300
       _ATMOSPHERE: false
 
+  earth2:
+    script_name: _earth.ssc
+    args:
+      _DELAY_BETWEEN_CONSTELLATIONS: 0
+      _TIME_STEP: "\"+1 day\""
+      _DELAY: 0.1
+      _N_ITER: 365
+      _INITIAL_FOV: 288
+      _ATMOSPHERE: false
+      _ATMOSPHERE: false
+
+
   perseus2:
     script_name: groups.ssc
     args:
