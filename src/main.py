@@ -79,6 +79,7 @@ async def main():
         )
 
     client = Stellarium(conf)
+    await client.ainit()
     if not await client.test():
         raise RuntimeError("Stellarium is not running")
 

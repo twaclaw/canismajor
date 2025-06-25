@@ -176,12 +176,13 @@ class NamesValidator:
 
 
 class Script:
-    def __init__(self, scripts_path: str, script_name: str, args: dict[str, Any]):
+    def __init__(self, scripts_path: str, script_name: str, common_header: str, args: dict[str, Any]):
         self.template = f"templates/{script_name}"
         self.script_path = f"{scripts_path}/{script_name}"
         self.args = args
         self.script = None
         self.id = script_name
+        self.common_header = common_header
 
     async def ainit(self):
         if not self.template:
@@ -190,6 +191,7 @@ class Script:
         async with aiofiles.open(self.template, "r") as f:
             self.script = await f.read()
 
+        self.script = self.script.replace("_COMMON_SCRIPT", self.common_header)
         for arg, value in self.args.items():
             if isinstance(value, list):
                 value = ", ".join(
@@ -229,6 +231,7 @@ class Stellarium:
         self.language = conf["stellarium"]["constellations_language"]
         self.const_english = {constellations[k]: k for k in constellations}
 
+
         scripts_path: str | None = None
         for p in conf["stellarium"]["script_paths"]:
             if os.path.exists(p):
@@ -238,9 +241,13 @@ class Stellarium:
         if not scripts_path:
             raise RuntimeError("No Stellarium scripts path found in configuration")
 
+        self.scripts_path = scripts_path
+
         scripts = conf["scripts"]
+
+        self.common_header = self.conf.get("scripts_common_header", "_canismajor_common.inc")
         self.scripts = {
-            key: Script(**({"scripts_path": scripts_path} | values))
+            key: Script(**({"scripts_path": scripts_path, "common_header": self.common_header} | values))
             for key, values in scripts.items()
         }
 
@@ -278,6 +285,16 @@ class Stellarium:
                 }
             except Exception:
                 self.playsound = False
+
+    async def ainit(self):
+        """
+        Copies the common script containing boilerplate initialization code
+        """
+        async with aiofiles.open(f"templates/{self.common_header}", "r") as f:
+            common_header = await f.read()
+
+        async with aiofiles.open(f"{self.scripts_path}/{self.common_header}", "w") as f:
+            await f.write(common_header)
 
     async def _close(self):
         await self.client.aclose()

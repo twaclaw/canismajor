@@ -31,6 +31,7 @@ qrcode_reader:
   device: /dev/hidraw0
   buffer_size: 16
 
+scripts_common_header: _canismajor_common.inc
 scripts:
   constellation: # don't change this name
     script_name: _constellations.ssc

@@ -1,5 +1,7 @@
 //
 
+include("_COMMON_SCRIPT");
+
 var constellations = _OBJECTS_LIST;
 var delay_stars_only = _DELAY_STARS_ONLY;
 var delay_art = _DELAY_ART;
@@ -7,33 +9,10 @@ var delay1 = _DELAY1;
 var delay2 = _DELAY2;
 var final_fov = _FINAL_FOV;
 var atmosphere = _ATMOSPHERE;
-var lines_thickness = 1;
 
-core.clear("starchart");
-core.setDate("now");
 
-core.setGuiVisible(false);
-GridLinesMgr.setFlagEquatorGrid(false);
-NebulaMgr.setFlagHints(false);
-
-ConstellationMgr.setConstellationDisplayStyle(1); // native style
-
-ConstellationMgr.deselectConstellations();
-
-ConstellationMgr.setFlagArt(false);
-ConstellationMgr.setFlagBoundaries(false);
-ConstellationMgr.setFlagLines(false);
-ConstellationMgr.setFlagLabels(false);
-ConstellationMgr.setFlagIsolateSelected(true);
-ConstellationMgr.setArtIntensity(0.6);
-ConstellationMgr.setConstellationLineThickness(lines_thickness);
-SolarSystem.setFlagLabels(false);
-GridLinesMgr.setFlagEclipticLine(false);
-
-StarMgr.setFlagLabels(false);
 LandscapeMgr.setFlagAtmosphere(atmosphere);
-LandscapeMgr.setFlagLandscape(false);
-LandscapeMgr.setFlagCardinalPoints(false);
+core.setDate("now");
 
 
 for (i=0; i<constellations.length; i++)

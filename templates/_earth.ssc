@@ -1,4 +1,6 @@
 include("common_objects.inc");
+include("_COMMON_SCRIPT");
+
 var constellations = _OBJECTS_LIST;
 
 var delay_between_constellations = _DELAY_BETWEEN_CONSTELLATIONS;
@@ -8,27 +10,21 @@ var atmosphere = _ATMOSPHERE;
 var initial_fov = _INITIAL_FOV;
 var n_iter = _N_ITER;
 
-core.setGuiVisible(false);
-LandscapeMgr.setFlagCardinalPoints(false);
-LandscapeMgr.setFlagLandscape(false);
+
 LandscapeMgr.setFlagAtmosphere(atmosphere);
-StarMgr.setFlagLabels(false);
 
 
-core.setDate("now");
-//core.setDate("2006:03:14T21:21:32");
-core.moveToRaDec("17h 53m 0s", "88d 25m 0s");
+//core.setDate("now");
+core.setDate("2006:03:14T21:21:32");
+core.moveToRaDec("17h 53m 0s", "66d 25m 0s");
+//core.moveToRaDec("17h", "66d");
+//core.moveToRaDec("4h", "10h");
 core.setSkyCulture("modern");
 StelMovementMgr.zoomTo(initial_fov, 1);
 
-ConstellationMgr.setConstellationDisplayStyle(1);
-
-ConstellationMgr.setFlagLabels(false);
-ConstellationMgr.setFlagArt(false);
-ConstellationMgr.deselectConstellations();
-ConstellationMgr.setFlagBoundaries(false);
 
 SolarSystem.setFlagLabels(true);
+SolarSystem.setFlagOrbits(false);
 StarMgr.setFlagLabels(false);
 
 
@@ -47,9 +43,9 @@ for(i=0; i<constellations.length; i++)
 }
 
 
-for(i=0; i < n_iter; i++)
+while(1)
 {
-	core.setDate(time_step);
 	core.selectObjectByName("Earth", true);
+	core.setDate(time_step);
 	core.wait(time_step_delay);
 }
