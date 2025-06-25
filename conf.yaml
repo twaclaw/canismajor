@@ -66,13 +66,29 @@ scripts:
     script_name: _earth.ssc
     args:
       _DELAY_BETWEEN_CONSTELLATIONS: 0
-      _TIME_STEP: "\"+1 day\""
+      _TIME_STEP: '"+1 day"'
       _DELAY: 0.1
       _N_ITER: 365
       _INITIAL_FOV: 288
       _ATMOSPHERE: false
+
+  solar:
+    script_name: _planet_orbits.ssc
+    args:
+      _TIME_STEP: '"+1 day"'
+      _DELAY: 0.1
+      _N_ITER: 365
       _ATMOSPHERE: false
 
+  halley:
+    script_name: _comet.ssc
+    args:
+      _INITIAL_FOV: 120
+      _FINAL_FOV: 100
+      _ATMOSPHERE: false
+      _OBJECT: '"1P/Halley (1986)"'
+      _LOCATION: '"Bogota, Colombia"'
+      _DATE: '"1986:03:19T00:04:00"'
 
   perseus2:
     script_name: groups.ssc

@@ -1,0 +1,48 @@
+include("common_objects.inc");
+include("_COMMON_SCRIPT");
+
+var time_step = _TIME_STEP;
+var time_step_delay = _DELAY;
+var atmosphere = _ATMOSPHERE;
+var n_iter = _N_ITER;
+
+var fovs = new Array(5, 10, 20, 50, 100, 200);
+
+
+LandscapeMgr.setFlagAtmosphere(atmosphere);
+
+
+core.setDate("2021:02:26T11:21:32");
+
+
+SolarSystem.setFlagLabels(true);
+SolarSystem.setFlagPlanets(true);
+SolarSystem.setFlagOrbits(true);
+
+
+core.setObserverLocation(0, 0, 0, 1, "", "Solar System Observer");
+
+core.setMountMode("equatorial");
+
+SolarSystem.setOrbitColorStyle("major_planets");
+var c1 = new Color(1.0, 1.0, 1.0);
+SolarSystem.setEarthOrbitColor(c1.toVec3f());
+
+var i = 0;
+var fov_i = 1;
+
+core.selectObjectByName("Sun", false);
+StelMovementMgr.autoZoomIn(6);
+StelMovementMgr.zoomTo(fovs[0], 12);
+
+while(1)
+{
+	core.setDate(time_step);
+	core.wait(time_step_delay);
+	if (i == 100) {
+		i = 0;
+		StelMovementMgr.zoomTo(fovs[fov_i], 1);
+		fov_i = (fov_i + 1) % fovs.length;
+	}
+	i = i + 1;
+}
