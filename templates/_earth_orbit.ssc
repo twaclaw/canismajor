@@ -1,0 +1,34 @@
+include("common_objects.inc");
+include("_COMMON_SCRIPT");
+
+
+var time_step = _TIME_STEP;
+var time_step_delay = _DELAY;
+var atmosphere = _ATMOSPHERE;
+var initial_fov = _INITIAL_FOV;
+
+
+LandscapeMgr.setFlagAtmosphere(atmosphere);
+
+core.setDate("now");
+StelMovementMgr.zoomTo(initial_fov, 1);
+
+
+SolarSystem.setFlagLabels(true);
+SolarSystem.setFlagOrbits(false);
+StarMgr.setFlagLabels(false);
+
+core.setObserverLocation(0, 0, 0, 1, "", "Sun");
+core.wait(4);
+
+
+core.selectObjectByName("Earth", false);
+StelMovementMgr.autoZoomIn(6);
+
+while(1)
+{
+	core.setDate(time_step);
+	core.wait(time_step_delay);
+}
+
+

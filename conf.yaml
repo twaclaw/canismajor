@@ -68,7 +68,14 @@ scripts:
       _DELAY_BETWEEN_CONSTELLATIONS: 0
       _TIME_STEP: '"+1 day"'
       _DELAY: 0.1
-      _N_ITER: 365
+      _INITIAL_FOV: 288
+      _ATMOSPHERE: false
+
+  earth3:
+    script_name: _earth_orbit.ssc
+    args:
+      _TIME_STEP: '"+1 day"'
+      _DELAY: 0.5
       _INITIAL_FOV: 288
       _ATMOSPHERE: false
 
@@ -79,6 +86,13 @@ scripts:
       _DELAY: 0.1
       _N_ITER: 365
       _ATMOSPHERE: false
+
+  sun2:
+    script_name: _sun.ssc
+    args:
+      _INITIAL_FOV: 120
+      _DELAY_1: 0.005
+      _DELAY_2: 3
 
   halley:
     script_name: _comet.ssc

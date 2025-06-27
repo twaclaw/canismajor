@@ -24,3 +24,7 @@ LandscapeMgr.setFlagCardinalPoints(false);
 
 core.setSkyCulture("modern");
 StarMgr.setFlagLabels(false);
+
+MarkerMgr.deleteAllMarkers();
+core.setMountMode("azimuthal");
+LabelMgr.deleteAllLabels();

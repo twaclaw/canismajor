@@ -1,4 +1,6 @@
 include("common_objects.inc");
+
+
 include("_COMMON_SCRIPT");
 
 var constellations = _OBJECTS_LIST;
@@ -8,7 +10,6 @@ var time_step = _TIME_STEP;
 var time_step_delay = _DELAY;
 var atmosphere = _ATMOSPHERE;
 var initial_fov = _INITIAL_FOV;
-var n_iter = _N_ITER;
 
 
 LandscapeMgr.setFlagAtmosphere(atmosphere);
@@ -19,7 +20,6 @@ core.setDate("2006:03:14T21:21:32");
 core.moveToRaDec("17h 53m 0s", "66d 25m 0s");
 //core.moveToRaDec("17h", "66d");
 //core.moveToRaDec("4h", "10h");
-core.setSkyCulture("modern");
 StelMovementMgr.zoomTo(initial_fov, 1);
 
 
