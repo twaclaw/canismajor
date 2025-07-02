@@ -23,7 +23,7 @@ LandscapeMgr.setFlagLandscape(false);
 LandscapeMgr.setFlagCardinalPoints(false);
 
 core.setSkyCulture("modern");
-StarMgr.setFlagLabels(false);
+StelMovementMgr.setFlagTracking(false);
 
 MarkerMgr.deleteAllMarkers();
 core.setMountMode("azimuthal");

@@ -74,7 +74,7 @@ scripts:
   earth3:
     script_name: _earth_orbit.ssc
     args:
-      _TIME_STEP: '"+1 day"'
+      _TIME_STEP: '"+1 hour"'
       _DELAY: 0.5
       _INITIAL_FOV: 288
       _ATMOSPHERE: false

@@ -11,7 +11,7 @@ var initial_fov = _INITIAL_FOV;
 LandscapeMgr.setFlagAtmosphere(atmosphere);
 
 core.setDate("now");
-StelMovementMgr.zoomTo(initial_fov, 1);
+//StelMovementMgr.zoomTo(initial_fov, 1);
 
 
 SolarSystem.setFlagLabels(true);
@@ -19,9 +19,9 @@ SolarSystem.setFlagOrbits(false);
 StarMgr.setFlagLabels(false);
 
 core.setObserverLocation(0, 0, 0, 1, "", "Sun");
-core.wait(4);
+core.wait(3);
 
-
+core.setMountMode("equatorial");
 core.selectObjectByName("Earth", false);
 StelMovementMgr.autoZoomIn(6);
 
