@@ -19,9 +19,11 @@ This project is basically a remote control for Stellarium. It uses the API provi
 
 The application is designed in a way that it can run on a computer, such as a laptop running Linux or Mac, as well as a Raspberry Pi (I tried a Raspberry Pi 5).
 
-## Video
+## Videos
 
 [![Video](https://img.youtube.com/vi/T3EH-_-DCJs/0.jpg)](https://www.youtube.com/watch?v=T3EH-_-DCJs)
+
+[![Video](https://img.youtube.com/vi/xoI_YOJNLg0/0.jpg)](https://www.youtube.com/watch?v=xoI_YOJNLg0)
 
 # Steps to reproduce
 
