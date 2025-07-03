@@ -4,6 +4,7 @@ include("common_objects.inc");
 include("_COMMON_SCRIPT");
 
 var objects = _OBJECTS_LIST;
+var audio = _AUDIO;
 var delay1 = _DELAY1;
 var delay2 = _DELAY2;
 var final_fov = _FINAL_FOV;
@@ -20,6 +21,15 @@ var loc = core.getObserverLocationInfo();
 
 StelMovementMgr.zoomTo(initial_fov, 3);
 
+var play_audio = false;
+if (audio.length == objects.length)
+{
+	play_audio = true;
+	for(i=0; i<objects.length; i++)
+	{
+		core.loadSound(audio[i], objects[i]);
+	}
+}
 
 for (i=0; i < objects.length; i++)
 {
@@ -28,6 +38,11 @@ for (i=0; i < objects.length; i++)
  	{
 		core.setObserverLocation(loc["longitude"], loc["latitude"], loc["altitude"], 10, "", "Sun");
  	}
+
+	if (play_audio == true)
+	{
+		core.playSound(objName);
+	}
 	core.selectObjectByName(objName, true);
 }
 

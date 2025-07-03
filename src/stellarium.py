@@ -7,7 +7,6 @@ from typing import Any
 
 import aiofiles
 import httpx
-import pygame
 
 logger = logging.getLogger("canismajor")
 
@@ -176,7 +175,13 @@ class NamesValidator:
 
 
 class Script:
-    def __init__(self, scripts_path: str, script_name: str, common_header: str, args: dict[str, Any]):
+    def __init__(
+        self,
+        scripts_path: str,
+        script_name: str,
+        common_header: str,
+        args: dict[str, Any],
+    ):
         self.template = f"templates/{script_name}"
         self.script_path = f"{scripts_path}/{script_name}"
         self.args = args
@@ -202,17 +207,21 @@ class Script:
                 value = str(value).lower() if isinstance(value, bool) else str(value)
             self.script = self.script.replace(arg, value)
 
-    async def replace_and_save(self, objects: list[str]):
+    async def replace_and_save(
+        self, objects: list[str], audio: list[str] | None = None
+    ):
         """
         Modifies the template and stores it in the script path.
         """
         if not self.script:
             await self.ainit()
-
         objects_list = ", ".join(f'"{item}"' for item in objects)
         modified_script = self.script.replace(
             "_OBJECTS_LIST", f"new Array({objects_list})"
         )
+
+        audio_list = ", ".join(f'"{item}"' for item in audio) if audio else "[]"
+        modified_script = modified_script.replace("_AUDIO", f"new Array({audio_list})")
 
         async with aiofiles.open(self.script_path, "w") as f:
             await f.write(modified_script)
@@ -231,7 +240,6 @@ class Stellarium:
         self.language = conf["stellarium"]["constellations_language"]
         self.const_english = {constellations[k]: k for k in constellations}
 
-
         scripts_path: str | None = None
         for p in conf["stellarium"]["script_paths"]:
             if os.path.exists(p):
@@ -243,11 +251,27 @@ class Stellarium:
 
         self.scripts_path = scripts_path
 
+        audio_symlink = os.path.join(self.scripts_path, "audio")
+        audio_target = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "audio")
+        )
+        if not os.path.islink(audio_symlink):
+            if os.path.exists(audio_symlink):
+                os.remove(audio_symlink)
+            os.symlink(audio_target, audio_symlink)
+
         scripts = conf["scripts"]
 
-        self.common_header = self.conf.get("scripts_common_header", "_canismajor_common.inc")
+        self.common_header = self.conf.get(
+            "scripts_common_header", "_canismajor_common.inc"
+        )
         self.scripts = {
-            key: Script(**({"scripts_path": scripts_path, "common_header": self.common_header} | values))
+            key: Script(
+                **(
+                    {"scripts_path": scripts_path, "common_header": self.common_header}
+                    | values
+                )
+            )
             for key, values in scripts.items()
         }
 
@@ -278,8 +302,6 @@ class Stellarium:
 
         if self.playsound:
             try:
-                pygame.mixer.init()
-                pygame.mixer.set_num_channels(1)
                 self.audiofiles = {k: f"audio/{k}.mp3" for k in constellations} | {
                     k: f"audio/{k}.mp3" for k in self.conf["search"]["objects"]
                 }
@@ -333,18 +355,12 @@ class Stellarium:
     async def _stop_script(self):
         await self._post("scripts/stop")
 
-    def _playmp3(self, mp3_path: str):
-        pygame.mixer.music.load(mp3_path)
-        pygame.mixer.music.play()
-
-    async def _playaudio(self, sound: list[str], delay: float = 1.0):
+    def _get_audio_file(self, sound: str) -> list[str] | None:
         audio_files = [
             self.audiofiles.get(self.const_english.get(s, s), None) for s in sound
         ]
         audio_files = list(filter(None, audio_files))
-        for sound in audio_files:
-            await asyncio.to_thread(self._playmp3, sound)
-            await asyncio.sleep(delay)
+        return audio_files
 
     async def _focus(
         self, param: str | None = None, script_type: ScriptType | None = None
@@ -357,33 +373,23 @@ class Stellarium:
             await self._run_script(param)
             return
 
-        tasks = []
+        audio: list[str] | None = None
+
         if script_type is ScriptType.STANDALONE_SCRIPT:
             script = self.scripts.get(param)
             if param == "zodiac2":
-                # Try to synchronize the audio with the Stellarium script
-                delay = self.conf["scripts"]["zodiac2"]["args"].get(
-                    "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
-                )
-                tasks.append(self._playaudio(self.zodiac, delay))
                 param = self.zodiac
             elif param == "earth2":
                 param = self.zodiac
             else:
                 consts = self.conf["scripts"][param]["args"].get("_OBJECTS_LIST", [])
-                if consts:
-                    delay = self.conf["scripts"][param]["args"].get(
-                        "_DELAY_BETWEEN_CONSTELLATIONS", 1.0
-                    )
-                    tasks.append(self._playaudio(consts, delay))
+                audio = self._get_audio_file(consts)
 
         elif script_type is ScriptType.PARAMS_SCRIPT_OBJECTS:
+            audio = self._get_audio_file([param])
             script = self.scripts.get("object")
-            if self.playsound:
-                tasks.append(self._playaudio([param]))
         else:
-            if self.playsound:
-                tasks.append(self._playaudio([param]))
+            audio = self._get_audio_file([param])
             script = self.scripts.get("constellation")
 
         if not script:
@@ -396,10 +402,9 @@ class Stellarium:
                 if isinstance(param, list)
                 else [constellations.get(param, param)]
             )
-        await script.replace_and_save(param)
 
-        tasks.append(self._run_script(script.id))
-        await asyncio.gather(*tasks)
+        await script.replace_and_save(param, audio if audio else None)
+        await self._run_script(script.id)
 
     async def test(self):
         response = await self._get("main/status")

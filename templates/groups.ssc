@@ -1,38 +1,52 @@
+
+include("_COMMON_SCRIPT");
+
 var constellations = _OBJECTS_LIST;
+var audio = _AUDIO;
 
 var delay1 = _DELAY_BETWEEN_CONSTELLATIONS;
 var initial_fov = _INITIAL_FOV;
 var final_fov = _FINAL_FOV;
 var delay_stars_only = _DELAY_STARS_ONLY;
 
-core.setSkyCulture("modern");
 core.clear("deepspace");
 
-ConstellationMgr.setConstellationDisplayStyle(1);
-
-ConstellationMgr.setFlagLabels(false);
-ConstellationMgr.setFlagArt(false);
-ConstellationMgr.deselectConstellations();
-
-LandscapeMgr.setFlagAtmosphere(false);
 
 ConstellationMgr.setArtIntensity(0.3);
 SolarSystem.setFlagLabels(false);
 
 
 ConstellationMgr.setFlagIsolateSelected(true);
-//ConstellationMgr.setFlagLabels(true);
 ConstellationMgr.setFlagLines(true);
 ConstellationMgr.setFlagArt(true);
 
+
+var play_audio = false;
+if (audio.length == constellations.length)
+{
+	play_audio = true;
+	for(i=0; i<constellations.length; i++)
+	{
+		core.loadSound(audio[i], constellations[i]);
+	}
+}
+
+if (play_audio == true){
+  core.playSound(constellations[0]);
+}
 
 core.selectObjectByName(constellations[0]);
 StelMovementMgr.autoZoomIn(6);
 StelMovementMgr.zoomTo(initial_fov,1);
 core.wait(delay1);
 
+
 for(i=1; i<constellations.length; i++)
 {
+	if (play_audio == true)
+	{
+		core.playSound(constellations[i]);
+	}
 	core.selectObjectByName(constellations[i]);
 	core.wait(delay1);
 }

@@ -9,16 +9,20 @@ core.clear("natural");
 LandscapeMgr.setFlagCardinalPoints(true);
 
 
-
 StelMovementMgr.zoomTo(200, 3);
 core.moveToAltAzi(0, 180, 3);
 
 var days = [
-    { date: "2021-03-22T05:30:00", iter: 700, color: "#01bb00", label: "Spring Equinox", pos_y: 60 },
-    { date: "2021-06-22T03:30:00", iter: 950, color: "#ff0000", label: "Summer Solstice", pos_y: 80 },
-    { date: "2021-09-22T05:30:00", iter: 700, color: "#aaaa00", label: "Autumn Equinox", pos_y: 100 },
-    { date: "2021-12-22T07:30:00", iter: 490, color: "#0010dd", label: "Winter Solstice", pos_y: 120 }
+    { date: "2021-03-22T05:30:00", iter: 700, color: "#01bb00", label: "Spring Equinox", pos_y: 60, sound: "audio/spring.mp3" },
+    { date: "2021-06-22T03:30:00", iter: 950, color: "#ff0000", label: "Summer Solstice", pos_y: 80, sound: "audio/summer.mp3" },
+    { date: "2021-09-22T05:30:00", iter: 700, color: "#aaaa00", label: "Autumn Equinox", pos_y: 100, sound: "audio/autumn.mp3" },
+    { date: "2021-12-22T07:30:00", iter: 490, color: "#0010dd", label: "Winter Solstice", pos_y: 120, sound: "audio/winter.mp3" }
 ];
+
+for (j =0; j < days.length; j++)
+{
+    core.loadSound(days[j].sound, days[j].label);
+}
 
 StelMovementMgr.setFlagTracking(true);
 
@@ -27,6 +31,7 @@ for (j =0; j < days.length; j++)
     core.setDate(days[j].date, "UTC");
     labelDay = LabelMgr.labelScreen(days[j].label, 60, days[j].pos_y, false, 20, days[j].color);
     LabelMgr.setLabelShow(labelDay, true);
+    core.playSound(days[j].label);
 
     core.wait(delay2);
 

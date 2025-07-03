@@ -8,36 +8,40 @@
 //              of a year.
 //
 
-var constellations = _OBJECTS_LIST;
 
+include("_COMMON_SCRIPT");
+
+var constellations = _OBJECTS_LIST;
 var delay1 = _DELAY_BETWEEN_CONSTELLATIONS;
 var delay2 = _DELAY2;
+var audio = new Array("audio/Gemini.mp3", "audio/Cancer.mp3", "audio/Leo.mp3", "audio/Virgo.mp3", "audio/Libra.mp3", "audio/Scorpius.mp3", "audio/Ophiuchus.mp3", "audio/Sagittarius.mp3", "audio/Capricornus.mp3", "audio/Aquarius.mp3", "audio/Pisces.mp3", "audio/Aries.mp3", "audio/Taurus.mp3");
 
-core.setSkyCulture("modern");
 core.clear("deepspace");
 
-ConstellationMgr.setConstellationDisplayStyle(1);
-
-ConstellationMgr.setFlagLabels(false);
-ConstellationMgr.setFlagArt(false);
-ConstellationMgr.deselectConstellations();
-
-LandscapeMgr.setFlagAtmosphere(false);
 core.setDate("2006:03:14T21:21:32");
 core.moveToRaDec("17h 53m 0s", "66d 25m 0s");
 StelMovementMgr.zoomTo(210, 5);
 
-ConstellationMgr.setArtIntensity(0.6);
-SolarSystem.setFlagLabels(false);
-
-
 ConstellationMgr.setFlagIsolateSelected(true);
-//ConstellationMgr.setFlagLabels(true);
 ConstellationMgr.setFlagArt(true);
+
+var play_audio = false;
+if (audio.length == constellations.length)
+{
+	play_audio = true;
+	for(i=0; i<constellations.length; i++)
+	{
+		core.loadSound(audio[i], constellations[i]);
+	}
+}
 
 for(i=0; i<constellations.length; i++)
 {
 	core.selectObjectByName(constellations[i]);
+	if (play_audio == true)
+	{
+		core.playSound(constellations[i]);
+	}
 	core.wait(delay1);
 }
 

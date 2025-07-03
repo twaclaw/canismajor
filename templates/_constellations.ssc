@@ -9,14 +9,28 @@ var delay1 = _DELAY1;
 var delay2 = _DELAY2;
 var final_fov = _FINAL_FOV;
 var atmosphere = _ATMOSPHERE;
+var audio = _AUDIO;
 
 
 LandscapeMgr.setFlagAtmosphere(atmosphere);
 core.setDate("now");
 
+var play_audio = false;
+if (audio.length == constellations.length)
+{
+	play_audio = true;
+	for(i=0; i<constellations.length; i++)
+	{
+		core.loadSound(audio[i], constellations[i]);
+	}
+}
 
 for (i=0; i<constellations.length; i++)
 {
+	if (play_audio == true)
+	{
+		core.playSound(constellations[i]);
+	}
 	objName = constellations[i];
 	core.selectObjectByName(objName);
 	StelMovementMgr.autoZoomIn(6);
