@@ -118,6 +118,7 @@ scripts:
         - "Cepheus"
         - "Cetus"
         - "Perseus"
+        - "Pegasus"
 
   argo:
     script_name: groups.ssc

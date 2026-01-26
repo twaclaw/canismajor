@@ -21,9 +21,10 @@ The application is designed in a way that it can run on a computer, such as a la
 
 ## Videos
 
-[![Video](https://img.youtube.com/vi/T3EH-_-DCJs/0.jpg)](https://www.youtube.com/watch?v=T3EH-_-DCJs)
+[![YouTube Video T3EH-_-DCJs](https://img.youtube.com/vi/T3EH-_-DCJs/maxresdefault.jpg)](https://www.youtube.com/watch?v=T3EH-_-DCJs)
 
-[![Video](https://img.youtube.com/vi/xoI_YOJNLg0/0.jpg)](https://www.youtube.com/watch?v=xoI_YOJNLg0)
+
+[![](https://utfs.io/f/nGnSqDveMsqxCC6j4UyYQ3MCeJvn60kP5ZLNKBV2hmd17fRU)](https://www.youtube.com/watch?v=xoI_YOJNLg0)
 
 # Steps to reproduce
 
