@@ -4,7 +4,7 @@ core.setGuiVisible(false);
 GridLinesMgr.setFlagEquatorGrid(false);
 NebulaMgr.setFlagHints(false);
 
-ConstellationMgr.setConstellationDisplayStyle(1); // native style
+//ConstellationMgr.setConstellationDisplayStyle(1); // native style
 
 ConstellationMgr.deselectConstellations();
 

@@ -102,6 +102,8 @@ constellations = {
     "Vulpecula": "Fox",
 }
 
+constellations = list(constellations.keys())
+
 
 class Behavior(StrEnum):
     """
@@ -134,11 +136,6 @@ class NamesValidator:
     """
 
     def __init__(self, conf: dict[str, Any], stellarium_scripts_path: str):
-        self.language = conf["stellarium"]["constellations_language"]
-        if self.language not in ["english", "native"]:
-            raise RuntimeError(
-                "Invalid language for constellations, must be 'english' or 'native'"
-            )
         self.objects = conf["search"]["objects"]
         self.stellarium_scripts_path = stellarium_scripts_path
         self.standalone_scripts = [
@@ -164,7 +161,7 @@ class NamesValidator:
 
         if obj_title in constellations:
             return (
-                constellations[obj_title] if self.language == "english" else obj_title,
+                obj.lower(),
                 ScriptType.PARAMS_SCRIPT_CONSTELLATIONS,
             )
 
@@ -215,6 +212,8 @@ class Script:
         """
         if not self.script:
             await self.ainit()
+
+        objects = [objects] if isinstance(objects, str) else objects
         objects_list = ", ".join(f'"{item}"' for item in objects)
         modified_script = self.script.replace(
             "_OBJECTS_LIST", f"new Array({objects_list})"
@@ -237,8 +236,6 @@ class Stellarium:
         self.conf = conf
         port = conf["stellarium"]["port"]
         self.url = f"{url}:{port}/api"
-        self.language = conf["stellarium"]["constellations_language"]
-        self.const_english = {constellations[k]: k for k in constellations}
 
         scripts_path: str | None = None
         for p in conf["stellarium"]["script_paths"]:
@@ -302,9 +299,9 @@ class Stellarium:
 
         if self.playsound:
             try:
-                self.audiofiles = {k: f"audio/{k}.mp3" for k in constellations} | {
-                    k: f"audio/{k}.mp3" for k in self.conf["search"]["objects"]
-                }
+                self.audiofiles = {
+                    k.lower(): f"audio/{k}.mp3" for k in constellations
+                } | {k: f"audio/{k}.mp3" for k in self.conf["search"]["objects"]}
             except Exception:
                 self.playsound = False
 
@@ -356,9 +353,7 @@ class Stellarium:
         await self._post("scripts/stop")
 
     def _get_audio_file(self, sound: str) -> list[str] | None:
-        audio_files = [
-            self.audiofiles.get(self.const_english.get(s, s), None) for s in sound
-        ]
+        audio_files = [self.audiofiles.get(s.lower(), None) for s in sound]
         audio_files = list(filter(None, audio_files))
         return audio_files
 
@@ -395,13 +390,6 @@ class Stellarium:
         if not script:
             logger.warning("Script not found")
             return
-
-        if self.language == "english":
-            param = (
-                [constellations.get(obj, obj) for obj in param]
-                if isinstance(param, list)
-                else [constellations.get(param, param)]
-            )
 
         await script.replace_and_save(param, audio if audio else None)
         await self._run_script(script.id)

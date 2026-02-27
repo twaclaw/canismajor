@@ -1,7 +1,6 @@
 stellarium:
   port: 8090
   initial_fov: 60
-  constellations_language: english
   playsound: true
 
   # Behavior when a script is already running
@@ -58,7 +57,7 @@ scripts:
     script_name: zodiac2.ssc
     args:
       _DELAY_BETWEEN_CONSTELLATIONS: 2
-      _DELAY2: 5
+      _DELAY2: 8
       _FINAL_FOV: 300
       _ATMOSPHERE: false
 
